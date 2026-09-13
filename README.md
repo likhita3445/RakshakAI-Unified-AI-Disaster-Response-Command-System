@@ -86,9 +86,8 @@ python -m http.server 3000
 ```
 
 ### 3. Open in Browser
-- **Unified Command Center:** http://localhost:3000/combined.html
-- **Home & Live SOS:** http://localhost:3000/index.html
-
+- **Unified Command Center**
+- **Home & Live SOS**
 ---
 
 ## 🧪 Running Automated Tests
