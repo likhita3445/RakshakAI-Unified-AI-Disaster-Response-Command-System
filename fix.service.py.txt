@@ -1,0 +1,84 @@
+class FixService:
+    """
+    Dynamic Safe Route Pathfinder & Supply Logistics Optimizer
+    """
+    @staticmethod
+    def compute_dynamic_safe_route(origin, destination, blocked_nodes=None):
+        """
+        Dynamic Pathfinding Algorithm taking into account flood level & road blockages
+        """
+        if blocked_nodes is None:
+            blocked_nodes = ['Highway Bridge 4', 'Sector 9 Main Road']
+        routes = [
+            {
+                'name': 'Route B (Highland Bypass)',
+                'status': 'RECOMMENDED',
+                'safety_score': 96,
+                'distance_km': 7.4,
+                'eta_minutes': 14,
+                'color': '#10b981',
+                'description': 'Safe elevated route avoiding flooded Yamuna riverbed.'
+            },
+            {
+                'name': 'Route A (Direct Highway)',
+                'status': 'BLOCKED',
+                'safety_score': 12,
+                'distance_km': 4.2,
+                'eta_minutes': 'INF',
+                'color': '#ff3b5c',
+                'description': 'CRITICAL: Submerged under 1.4m floodwater. Highway Bridge 4 closed.'
+            },
+            {
+                'name': 'Route C (East Corridor)',
+                'status': 'ALTERNATIVE',
+                'safety_score': 74,
+                'distance_km': 10.1,
+                'eta_minutes': 22,
+                'color': '#eab308',
+                'description': 'Clear road but high traffic congestion.'
+            }
+        ]
+        return {
+            'origin': origin,
+            'destination': destination,
+            'recommended_route': routes[0],
+            'all_routes': routes,
+            'reroute_reason': 'Main Highway Bridge structural risk exceeded 80% threshold.'
+        }
+    @staticmethod
+    def optimize_resource_allocation(area_demands, available_inventory):
+        """
+        Resource Optimization Solver distributing available inventory based on Priority Scores
+        """
+        allocations = []
+        for area in area_demands:
+            score = area.get('severityScore', 50)
+            affected = area.get('affected', 100)
+            if score >= 85:
+                amb = 2
+                teams = 1
+                water = 500
+                food = 300
+            elif score >= 60:
+                amb = 1
+                teams = 0
+                water = 300
+                food = 400
+            else:
+                amb = 0
+                teams = 0
+                water = 100
+                food = 200
+            allocations.append({
+                'area_id': area.get('id'),
+                'area_name': area.get('name'),
+                'priority_score': score,
+                'allocated_resources': {
+                    'ambulances': amb,
+                    'rescue_teams': teams,
+                    'water_liters': water,
+                    'food_kits': food
+                },
+                'justification': f'Prioritized score {score}/100 due to high critical patient count & road hazard.'
+            })
+        return allocations

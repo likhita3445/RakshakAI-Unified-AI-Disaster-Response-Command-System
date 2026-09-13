@@ -1,33 +1,6 @@
-# ============================================================================
-# RAKSHAKAI — DISASTER RESPONSE COMMAND SYSTEM
-# Production & Development Python Dependencies
-# ============================================================================
-
-# --- Core Web Framework & REST API ---
+# RakshakAI Backend Dependencies
 Flask>=3.0.0
 flask-cors>=4.0.0
-Werkzeug>=3.0.0
-
-# --- AI, LLMs & Model Providers (Optional Cloud Backends) ---
 requests>=2.31.0
-openai>=1.0.0
-google-generativeai>=0.4.0
-
-# --- Database, Supabase & PostGIS GIS Integration ---
-supabase>=2.0.0
-psycopg2-binary>=2.9.9
-SQLAlchemy>=2.0.0
-
-# --- Geospatial Telemetry & Data Processing ---
-numpy>=1.24.0
-shapely>=2.0.0
-
-# --- Security, Cryptography & Config ---
-cryptography>=41.0.0
-PyJWT>=2.8.0
 python-dotenv>=1.0.0
-
-# --- Automated Testing & Quality Assurance ---
 pytest>=7.4.0
-pytest-cov>=4.1.0
-coverage>=7.3.0

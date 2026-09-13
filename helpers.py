@@ -1,0 +1,39 @@
+import math
+from flask import jsonify
+
+def make_response(success=True, data=None, message="Operation successful", status_code=200):
+    """
+    Standardized API JSON response wrapper
+    """
+    payload = {
+        'success': success,
+        'message': message,
+        'data': data if data is not None else {}
+    }
+    return jsonify(payload), status_code
+
+
+def calculate_haversine_distance(lat1, lon1, lat2, lon2):
+    """
+    Calculate geographic distance between two lat/lon coordinates in kilometers
+    """
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return round(R * c, 2)
+
+
+def format_score_badge(score):
+    """
+    Return severity badge label and color code
+    """
+    if score >= 85:
+        return {'label': 'CRITICAL', 'color': '#ff3b5c', 'level': 1}
+    elif score >= 60:
+        return {'label': 'HIGH', 'color': '#ff8800', 'level': 2}
+    elif score >= 35:
+        return {'label': 'MEDIUM', 'color': '#eab308', 'level': 3}
+    else:
+        return {'label': 'LOW', 'color': '#10b981', 'level': 4}

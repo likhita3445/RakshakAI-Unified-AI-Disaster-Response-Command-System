@@ -1,0 +1,23 @@
+class TestService:
+    """
+    Demo Simulator & 8-Stage Judge Presentation Orchestrator
+    """
+    JUDGE_STAGES = [
+        {"step": 1, "title": "Flash Flood Emergency Detected", "target": "Yamuna Sector 9", "alert": "Water level +1.4m"},
+        {"step": 2, "title": "Multilingual Report Ingested", "target": "Hindi NLP Parsing", "extracted_people": 20},
+        {"step": 3, "title": "AI Priority Score Computed", "target": "Area A", "score": 94, "status": "CRITICAL"},
+        {"step": 4, "title": "Resource Allocation Matrix Generated", "ambulances": 2, "teams": 1, "water": "500L"},
+        {"step": 5, "title": "Main Highway Bridge Blockage Alert", "hazard": "Bridge Stress 89%", "status": "BLOCKED"},
+        {"step": 6, "title": "Dynamic Re-Routing Triggered", "route": "Route B (Highland Pass)", "status": "RECOMMENDED"},
+        {"step": 7, "title": "What-If Simulation Triggered", "population_spike": 3000, "new_score": 98},
+        {"step": 8, "title": "Final AI Action Plan Executed", "status": "SUCCESSFUL DISPATCH"}
+    ]
+
+    @staticmethod
+    def get_judge_demo_step(step_number):
+        step_idx = max(0, min(len(TestService.JUDGE_STAGES) - 1, step_number - 1))
+        return {
+            'current_step': step_number,
+            'total_steps': len(TestService.JUDGE_STAGES),
+            'stage_data': TestService.JUDGE_STAGES[step_idx]
+        }
