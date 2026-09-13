@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RakshakAI Citizen Companion — Live Mobile Emergency App</title>
+  <meta name="description" content="RakshakAI Citizen Companion: One-touch 3D SOS, VicEmergency live hazard map, Google Android earthquake alert system, and nearest emergency relief center & hospital finder.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <style>
+    body {
+      background: #0d0103;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-top-nav {
+      background: rgba(13, 0, 4, 0.97);
+      border-bottom: 1px solid rgba(172, 22, 52, 0.3);
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(12px);
+    }
+    .app-main-viewport {
+      flex: 1;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 70px;
+    }
+    .app-bottom-dock {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 600px;
+      background: rgba(13, 0, 4, 0.99);
+      border-top: 1px solid rgba(172, 22, 52, 0.3);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 6px 4px 12px 4px;
+      z-index: 1000;
+      backdrop-filter: blur(16px);
+    }
+    .app-dock-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 0.68rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 4px;
+      transition: all 0.2s;
+    }
+    .app-dock-btn.active {
+      color: #fff;
+    }
+    .app-dock-btn.active span.icon {
+      transform: translateY(-2px) scale(1.15);
+    }
+    .app-dock-btn.tab-sos.active { color: var(--accent-critical); }
+    .app-dock-btn.tab-map.active { color: #38bdf8; }
+    .app-dock-btn.tab-hosp.active { color: var(--accent-low); }
+    .app-dock-btn.tab-quake.active { color: var(--accent-high); }
+    .app-dock-btn.tab-hub.active { color: var(--accent-primary); }
+
+    .app-tab-pane {
+      display: none;
+      padding: 1rem;
+      animation: fadeIn 0.25s ease-out;
+    }
+    .app-tab-pane.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="app-top-nav">
+    <a href="index.html" style="display:flex; align-items:center; gap:0.5rem; text-decoration:none; color:#fff;">
+      <div class="shield-icon" style="width:30px; height:30px; font-size:1.1rem;">🛡️</div>
+      <div style="font-family:var(--font-heading); font-weight:800; font-size:1.1rem;">RAKSHAK<span style="color:var(--accent-primary);">AI</span></div>
+    </a>
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+      <span class="badge-live" style="font-size:0.72rem;"><span class="live-dot"></span> LIVE 5G</span>
+      <a href="index.html#dashboard" style="color:var(--accent-primary); font-size:0.78rem; text-decoration:none; border:1px solid var(--glass-border); padding:0.25rem 0.6rem; border-radius:4px;">
+        HQ 🖥️
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Mobile App Viewport -->
+  <main class="app-main-viewport">
+    
+    <!-- Dynamic Island Live Status Banner -->
+    <div style="padding: 0.6rem 1rem 0 1rem;">
+      <div class="dynamic-island" style="position:relative; top:0; left:0; transform:none; width:100%; border-radius:12px; padding:8px 14px;" onclick="trigger3DSOS()">
+        <span class="dynamic-island-dot"></span>
+        <span id="dynamic-island-text">LIVE GPS BEACON READY • TAP FOR SOS</span>
+      </div>
+    </div>
+
+    <!-- TAB 1: 3D SOS PORTAL & FAMILY NETWORK -->
+    <section id="pane-sos" class="app-tab-pane active">
+      <div class="sos-portal-container">
+        <span class="tag tag-critical" style="font-size:0.8rem; padding:0.25rem 0.8rem; margin-bottom:0.5rem;">
+          🚨 1-TOUCH INSTANT RESCUE BROADCAST
+        </span>
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.5rem;">
+          📍 Current GPS: <strong>28.6139° N, 77.2090° E</strong> (Yamuna Sector 9)
+        </div>
+
+        <!-- 3D Glowing SOS Button Stage -->
+        <div class="sos-button-stage">
+          <div class="sos-pulse-ring"></div>
+          <div class="sos-pulse-ring"></div>
+          <div class="sos-pulse-ring"></div>
+          <button id="btn-main-sos-3d" class="btn-sos-3d" onclick="trigger3DSOS()">
+            <span>SOS</span>
+            <span class="sub">PRESS FOR HELP</span>
+          </button>
+        </div>
+
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+          Pressing SOS alerts Family Contacts & dispatches nearest ALS Ambulance & NDRF Boat Squad.
+        </p>
+
+        <!-- Radiating Connected Network Grid -->
+        <div class="radiating-network-grid">
+          <div class="network-node-card" onclick="showToast('👨‍👩‍👧 Alerting Mom & Dad with live GPS telemetry', 'info')">
+            <div class="network-node-icon">👨‍👩‍👧</div>
+            <div class="network-node-info">
+              <h5>Parents & Family</h5>
+              <p id="node-family-status">Tracking Enabled</p>
+            </div>
+          </div>
+
+          <div class="network-node-card" onclick="PlaySound('alert'); showToast('🔔 Emergency siren audio beacon active!', 'critical')">
+            <div class="network-node-icon">🔔</div>
+            <div class="network-node-info">
+              <h5>Siren Alarm</h5>
+              <p id="node-siren-status">110dB Audio</p>
+            </div>
+          </div>
+
+          <div class="network-node-card" onclick="showToast('📍 High-precision GPS beacon locked: 28.6139, 77.2090', 'info')">
+            <div class="network-node-icon">📍</div>
+            <div class="network-node-info">
+              <h5>Live Coordinates</h5>
+              <p>3m Accuracy</p>
+            </div>
+          </div>
+
+          <div class="network-node-card" onclick="showToast('🛡️ Police 112 & NDRF Team alerted!', 'success')">
+            <div class="network-node-icon">🛡️</div>
+            <div class="network-node-info">
+              <h5>NDRF & Police</h5>
+              <p>Squad 2 Ready</p>
+            </div>
+          </div>
+
+          <div class="network-node-card" onclick="showToast('💙 Medical Triage Priority 1 Assigned', 'info')">
+            <div class="network-node-icon">💙</div>
+            <div class="network-node-info">
+              <h5>Medical Vitals</h5>
+              <p>Critical Priority</p>
+            </div>
+          </div>
+
+          <div class="network-node-card" onclick="switchAppTab('hosp')">
+            <div class="network-node-icon">🏥</div>
+            <div class="network-node-info">
+              <h5>Nearby Hospitals</h5>
+              <p>46 ICU Beds Ready</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: VIC EMERGENCY LIVE HAZARD MAP -->
+    <section id="pane-map" class="app-tab-pane">
+      <div class="vic-header">
+        <div class="vic-brand">
+          <div class="vic-triangle">⚠️</div>
+          <span>VIC EMERGENCY MAP</span>
+        </div>
+        <span style="font-size:1.2rem; cursor:pointer;" onclick="showToast('🔔 8 Active Warnings in Sector', 'info')">🔔</span>
+      </div>
+
+      <div class="vic-map-wrapper" style="height:420px;">
+        <div style="width:100%; height:100%; background: #242a38; position:relative; background-image: radial-gradient(#334155 1.5px, transparent 1.5px); background-size: 20px 20px;">
+          <svg style="position:absolute; width:100%; height:100%; top:0; left:0; pointer-events:none;">
+            <path d="M 0,220 Q 120,180 200,240 T 400,200" fill="none" stroke="#0ea5e9" stroke-width="12" opacity="0.4"/>
+            <path d="M 50,80 L 160,180 L 290,160 L 380,260" fill="none" stroke="#64748b" stroke-width="4" stroke-dasharray="6,4" opacity="0.6"/>
+          </svg>
+          <div class="hazard-pin triangle-danger" style="top:50px; left:60px;" onclick="showToast('⚠️ Wallan: Flash flood warning active (+1.8m)', 'critical')" title="Wallan: Flood">!</div>
+          <div class="hazard-pin triangle-danger" style="top:110px; left:180px;" onclick="showToast('⚠️ Healesville: Bridge structural alert', 'critical')" title="Healesville">!</div>
+          <div class="hazard-pin fire-danger" style="top:160px; right:70px;" onclick="showToast('🔥 High Bushfire Warning: Rapid wind shift', 'critical')" title="Fire Outbreak">🔥</div>
+          <div class="hazard-pin triangle-danger" style="bottom:120px; left:80px;" onclick="showToast('⚠️ Warragul: Low-lying evacuation ordered', 'critical')" title="Warragul">!</div>
+          <div class="hazard-pin triangle-danger" style="bottom:70px; right:110px;" onclick="showToast('⚠️ Lilydale: Safe Evacuation Point Accessible via Route B', 'info')" title="Lilydale">!</div>
+          <div class="hazard-pin" style="bottom:40px; left:45%; background:#10b981; border-radius:50%; width:32px; height:32px; color:#fff;" onclick="showToast('📍 You are here: Yamuna Riverbank Zone', 'success')">📍</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--glass-border); margin-top:1rem;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+          <strong>Tactical Highway Status:</strong>
+          <span class="tag tag-critical">ROUTE A BLOCKED</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
+          Highway Bridge 4 is submerged under 1.4m floodwaters. Follow <strong>Route B Highland Bypass</strong> for safe evacuation to North Stadium Shelter.
+        </p>
+      </div>
+    </section>
+
+    <!-- TAB 3: NEAREST HOSPITALS & RELIEF CENTRES -->
+    <section id="pane-hosp" class="app-tab-pane">
+      <div class="shelter-portal-header" style="padding:1.25rem;">
+        <div class="shelter-graphic-centerpiece">
+          <div class="shelter-building-badge" style="width:70px; height:70px;">
+            <div class="cross-pin" style="width:24px; height:24px; font-size:0.75rem;">➕</div>
+            <div class="building-icon" style="font-size:1.8rem; margin-top:4px;">🏥</div>
+          </div>
+          <div class="shelter-header-text">
+            <h2 style="font-size:1.35rem;">EMERGENCY RELIEF CENTRES</h2>
+            <p style="font-size:0.85rem;">Find open shelter beds, ICU care & rations near you</p>
+          </div>
+        </div>
+        <div class="orbit-amenities-row" style="margin-top:0.75rem;">
+          <span class="amenity-chip" style="font-size:0.72rem; padding:0.25rem 0.6rem;">🛏️ Available Beds</span>
+          <span class="amenity-chip" style="font-size:0.72rem; padding:0.25rem 0.6rem;">🩺 Medical Bay</span>
+          <span class="amenity-chip" style="font-size:0.72rem; padding:0.25rem 0.6rem;">🥫 Food Rations</span>
+        </div>
+      </div>
+
+      <!-- Easy Search Bar ("Easy to Search") -->
+      <div style="margin-bottom: 0.85rem; position:relative;">
+        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:1.1rem;">🔍</span>
+        <input type="text" class="universal-search-input" style="padding-left: 2.4rem; font-size: 0.88rem; border-radius: 8px;"
+          placeholder="Fast Search: Type AIIMS, ICU, oxygen, shelter..."
+          oninput="handleUniversalQuickSearch(this.value)">
+      </div>
+
+      <!-- State & Search Filter (NHA / PM-JAY Empanelled Government Facilities) -->
+      <div style="background: rgba(30, 2, 10, 0.85); border: 1px solid rgba(231,114,145,0.25); border-radius: 12px; padding: 0.75rem; margin-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem;">
+          <select id="hospital-state-select" class="form-input" style="flex: 1; padding: 0.45rem 0.6rem; font-size: 0.8rem; background: rgba(13,0,4,0.9); border: 1px solid rgba(231,114,145,0.4); color: #fff; border-radius: 8px;" onchange="filterHospitalsByState(this.value)">
+            <option value="ALL">🇮🇳 All States (India)</option>
+            <option value="DL">Delhi (NCR Govt)</option>
+            <option value="JK">Jammu & Kashmir / Ladakh</option>
+            <option value="MH">Maharashtra</option>
+            <option value="MP">Madhya Pradesh</option>
+            <option value="HR">Haryana</option>
+            <option value="UK">Uttarakhand</option>
+            <option value="GA">Goa</option>
+            <option value="OD">Odisha</option>
+            <option value="GJ">Gujarat</option>
+            <option value="TS">Telangana</option>
+            <option value="MG">Meghalaya</option>
+            <option value="CG">Chhattisgarh</option>
+            <option value="NL">Nagaland</option>
+            <option value="RJ">Rajasthan</option>
+            <option value="HP">Himachal Pradesh</option>
+          </select>
+          <button class="map-btn" style="font-size: 0.75rem; padding: 0.45rem 0.75rem; background: rgba(172,22,52,0.3); border: 1px solid rgba(231,114,145,0.4); color: #fff; border-radius: 8px;" onclick="resetHospitalFilters()">Reset</button>
+        </div>
+        <input type="text" id="hospital-search-input" class="form-input" placeholder="🔍 Search hospital, district, speciality..." style="width: 100%; padding: 0.45rem 0.7rem; font-size: 0.8rem; background: rgba(13,0,4,0.9); border: 1px solid rgba(231,114,145,0.3); color: #fff; border-radius: 8px;" oninput="searchHospitals(this.value)">
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="shelter-filter-bar" style="margin-bottom:1rem;">
+        <div class="filter-pill-group">
+          <button id="pill-filter-all" class="filter-pill active" onclick="setShelterFilter('ALL')">All (<span id="count-all-facilities">70+</span>)</button>
+          <button id="pill-filter-hospital" class="filter-pill" onclick="setShelterFilter('HOSPITAL')">🏥 Hospitals</button>
+          <button id="pill-filter-shelter" class="filter-pill" onclick="setShelterFilter('SHELTER')">⛺ Shelters</button>
+        </div>
+        <button class="map-btn" style="font-size:0.75rem; background: linear-gradient(135deg, #3E0014, #7A002B); border:none; color:#fff; padding:0.45rem 0.9rem; font-weight:700;" onclick="changeUserLocation('gps')">📍 GPS Me</button>
+      </div>
+
+      <!-- GPS Locate CTA -->
+      <div id="hosp-gps-cta" style="background: linear-gradient(135deg, rgba(62,0,20,0.6), rgba(122,0,43,0.4)); border:1px solid rgba(231,114,145,0.35); border-radius:12px; padding:1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.85rem; cursor:pointer;" onclick="changeUserLocation('gps')">
+        <div style="font-size:2rem; line-height:1;">📡</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-heading); font-size:0.95rem; font-weight:800; color:#fff;">FIND NEAREST OPEN HOSPITAL</div>
+          <div id="hosp-gps-desc" style="font-size:0.78rem; color:var(--accent-primary); margin-top:2px;">Tap to use Live GPS — sorted by real distance</div>
+        </div>
+        <div style="background:var(--accent-critical); border-radius:8px; padding:0.4rem 0.7rem; font-size:0.75rem; font-weight:800; color:#fff; white-space:nowrap;">LOCATE →</div>
+      </div>
+
+      <div id="shelter-cards-list">
+        <!-- Injected via script.js -->
+      </div>
+    </section>
+
+    <!-- TAB 4: GOOGLE ANDROID EARTHQUAKE ALERT -->
+    <section id="pane-quake" class="app-tab-pane">
+      <div class="quake-alert-banner">
+        <div class="quake-alert-icon">⚠️</div>
+        <div class="quake-alert-title">Earthquake</div>
+        <div class="quake-alert-sub">Estimated magnitude 6.1 • 16 miles away</div>
+      </div>
+
+      <div class="quake-instructions-list">
+        <div class="quake-step-item">
+          <div class="quake-step-label">Drop</div>
+          <div class="quake-step-illustration">
+            <span>🧎‍♂️</span>
+            <span style="color:#ff3b5c; font-size:1.8rem;">⬇️</span>
+          </div>
+        </div>
+
+        <div class="quake-step-item">
+          <div class="quake-step-label">Cover</div>
+          <div class="quake-step-illustration">
+            <span style="color:#ff3b5c; font-size:1.8rem;">➡️</span>
+            <span>🛡️🪑</span>
+          </div>
+        </div>
+
+        <div class="quake-step-item">
+          <div class="quake-step-label">Hold</div>
+          <div class="quake-step-illustration">
+            <span>🤝</span>
+            <span>🪑</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="quake-system-tag">Android Earthquake Alerts System</div>
+      <button class="btn-quake-next" onclick="triggerEarthquakeDrill()">
+        Tap for next steps
+      </button>
+    </section>
+
+    <!-- TAB 5: EMERGENCY CALLING HUB -->
+    <section id="pane-hub" class="app-tab-pane">
+      <div style="text-align:center; margin-bottom:0.5rem;">
+        <span class="tag tag-ai">ONE-TOUCH EMERGENCY DISPATCH</span>
+        <h3 style="color:#fff; margin-top:0.3rem; font-family:var(--font-heading);">Calling Hub</h3>
+      </div>
+
+      <div class="calling-hub-circle-stage">
+        <div class="service-call-node pos-ambulance" onclick="callEmergencyService('Ambulance Dispatch', '108')">
+          <span>🚑</span>
+          <span class="node-label">108</span>
+        </div>
+        <div class="service-call-node pos-fire" onclick="callEmergencyService('Fire & Rescue Service', '101')">
+          <span>🚒</span>
+          <span class="node-label">101</span>
+        </div>
+        <div class="service-call-node pos-hospital" onclick="callEmergencyService('AIIMS Trauma Emergency', '102')">
+          <span>🏥</span>
+          <span class="node-label">Hospital</span>
+        </div>
+        <div class="service-call-node pos-chopper" onclick="callEmergencyService('NDRF Air Evacuation Airlift', '112')">
+          <span>🚁</span>
+          <span class="node-label">Airlift</span>
+        </div>
+        <div class="service-call-node pos-siren" onclick="callEmergencyService('Police & Emergency Command', '112')">
+          <span>🚨</span>
+          <span class="node-label">112</span>
+        </div>
+
+        <div class="center-help-phone-btn" onclick="callEmergencyService('Unified Emergency Response 112', '112')">
+          <span style="font-size:1.8rem;">📞</span>
+          <span style="font-size:0.9rem; font-weight:900; letter-spacing:1px; margin-top:2px;">HELP!</span>
+          <span style="font-size:0.62rem; opacity:0.9;">CALLING...</span>
+        </div>
+      </div>
+
+      <p style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-top:1rem;">
+        Tapping any service node dials high-priority emergency frequency directly.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- Bottom App Navigation Dock -->
+  <nav class="app-bottom-dock">
+    <button id="dock-btn-sos" class="app-dock-btn tab-sos active" onclick="switchAppTab('sos')">
+      <span class="icon">🚨</span>
+      <span>SOS</span>
+    </button>
+    <button id="dock-btn-map" class="app-dock-btn tab-map" onclick="switchAppTab('map')">
+      <span class="icon">🗺️</span>
+      <span>Hazards</span>
+    </button>
+    <button id="dock-btn-hosp" class="app-dock-btn tab-hosp" onclick="switchAppTab('hosp')">
+      <span class="icon">🏥</span>
+      <span>Relief/Beds</span>
+    </button>
+    <button id="dock-btn-quake" class="app-dock-btn tab-quake" onclick="switchAppTab('quake')">
+      <span class="icon">⚠️</span>
+      <span>Quake</span>
+    </button>
+    <button id="dock-btn-hub" class="app-dock-btn tab-hub" onclick="switchAppTab('hub')">
+      <span class="icon">📞</span>
+      <span>Helplines</span>
+    </button>
+  </nav>
+
+  <!-- Modals -->
+  <!-- Family Safe Check-In Modal -->
+  <div id="modal-family-checkin" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">👨‍👩‍👧 REGISTER FAMILY SAFE AT SHELTER</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-family-checkin')">✕</button>
+      </div>
+      <form onsubmit="submitFamilyCheckin(event)" style="display:flex; flex-direction:column; gap:1rem;">
+        <input type="hidden" id="checkin-facility-id" value="">
+        <div style="background:rgba(211,163,118,0.1); border:1px solid var(--glass-border); padding:0.8rem; border-radius:var(--radius-sm);">
+          <span style="font-size:0.75rem; color:var(--text-muted);">Designated Shelter / Hospital:</span>
+          <h4 id="checkin-facility-name" style="color:#fff; margin:0.2rem 0 0 0; font-family:var(--font-heading);">North District Stadium Safe Relief Centre</h4>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.3rem;">Primary Contact / Family Head Name *</label>
+          <input id="checkin-primary-name" type="text" required placeholder="e.g. Ramesh Kumar"
+            style="width:100%; background:var(--bg-panel); border:1px solid var(--glass-border); border-radius:var(--radius-sm); padding:0.7rem; color:#fff;">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem;">
+          <div>
+            <label style="display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.3rem;">Phone Number *</label>
+            <input id="checkin-phone" type="tel" required placeholder="+91-98765-43210"
+              style="width:100%; background:var(--bg-panel); border:1px solid var(--glass-border); border-radius:var(--radius-sm); padding:0.7rem; color:#fff;">
+          </div>
+          <div>
+            <label style="display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.3rem;">Family Members Count *</label>
+            <input id="checkin-members-count" type="number" min="1" max="15" value="3" required
+              style="width:100%; background:var(--bg-panel); border:1px solid var(--glass-border); border-radius:var(--radius-sm); padding:0.7rem; color:#fff;">
+          </div>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.3rem;">Family Member Names (Comma separated)</label>
+          <input id="checkin-member-names" type="text" placeholder="e.g. Ramesh, Sunita, Aarav"
+            style="width:100%; background:var(--bg-panel); border:1px solid var(--glass-border); border-radius:var(--radius-sm); padding:0.7rem; color:#fff;">
+        </div>
+        <div>
+          <label style="display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.3rem;">Special Medical Needs (If any)</label>
+          <input id="checkin-medical-needs" type="text" placeholder="e.g. Insulin, wheelchair"
+            style="width:100%; background:var(--bg-panel); border:1px solid var(--glass-border); border-radius:var(--radius-sm); padding:0.7rem; color:#fff;">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
+          <button type="button" class="map-btn" onclick="closeModal('modal-family-checkin')">Cancel</button>
+          <button type="submit" class="btn-sos-trigger" style="padding:0.75rem 1.5rem;">✅ CONFIRM SAFE CHECK-IN</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Hospital Details Modal -->
+  <div id="modal-hospital-details" class="modal-overlay">
+    <div class="modal-box" style="max-width: 550px;">
+      <div class="modal-header">
+        <div class="modal-title">🏥 EMERGENCY FACILITY TELEMETRY</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-hospital-details')">✕</button>
+      </div>
+      <div id="hospital-details-content"></div>
+    </div>
+  </div>
+
+  <!-- Earthquake Checklist Modal -->
+  <div id="modal-earthquake-checklist" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color:var(--accent-critical);">⚠️ POST-EARTHQUAKE SAFETY CHECKLIST</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-earthquake-checklist')">✕</button>
+      </div>
+      <div style="padding:0.5rem 0;">
+        <div style="background:rgba(255,59,92,0.15); border:1px solid rgba(255,59,92,0.4); padding:0.8rem; border-radius:var(--radius-sm); margin-bottom:1rem;">
+          <strong>🚨 PROTOCOL:</strong> Stay clear of damaged buildings. Proceed to North Stadium Shelter.
+        </div>
+        <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:0.6rem; font-size:0.85rem;">
+          <li style="display:flex; align-items:center; gap:0.6rem; background:var(--bg-panel); padding:0.6rem; border-radius:6px;">
+            <input type="checkbox" id="m-chk-gas" style="width:16px; height:16px;">
+            <label for="m-chk-gas">1. Shut off cooking gas cylinders.</label>
+          </li>
+          <li style="display:flex; align-items:center; gap:0.6rem; background:var(--bg-panel); padding:0.6rem; border-radius:6px;">
+            <input type="checkbox" id="m-chk-power" style="width:16px; height:16px;">
+            <label for="m-chk-power">2. Turn off main electrical breaker.</label>
+          </li>
+          <li style="display:flex; align-items:center; gap:0.6rem; background:var(--bg-panel); padding:0.6rem; border-radius:6px;">
+            <input type="checkbox" id="m-chk-shelter" style="width:16px; height:16px;">
+            <label for="m-chk-shelter">3. Move to safe open relief shelter.</label>
+          </li>
+        </ul>
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
+          <button class="map-btn" onclick="closeModal('modal-earthquake-checklist')">Close</button>
+          <button class="btn-judge-mode" onclick="closeModal('modal-earthquake-checklist'); switchAppTab('hosp');">
+            ⛺ VIEW SAFE SHELTERS
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call Simulator Modal -->
+  <div id="modal-call-simulator" class="modal-overlay">
+    <div class="modal-box" style="max-width: 380px; text-align:center;">
+      <div style="width:60px; height:60px; border-radius:50%; background:rgba(16,185,129,0.2); border:2px solid var(--accent-low); display:flex; align-items:center; justify-content:center; font-size:1.8rem; margin:0 auto; animation:pulse-dot 1.5s infinite;">
+        📞
+      </div>
+      <h3 id="call-sim-title" style="color:#fff; font-family:var(--font-heading); margin:0.6rem 0 0.2rem 0;">Ambulance 108</h3>
+      <p id="call-sim-number" style="color:var(--accent-low); font-weight:700; margin:0 0 0.8rem 0;">Hotline: 108</p>
+      <div style="background:rgba(255,255,255,0.05); padding:0.8rem; border-radius:var(--radius-sm); border:1px solid var(--glass-border); text-align:left; font-size:0.82rem; margin-bottom:1rem;">
+        <div>Status: <strong style="color:var(--accent-low);">CONNECTED (00:08)</strong></div>
+        <div>GPS Lat: 28.6139, Lng: 77.2090</div>
+        <div>Assigned: ALS Ambulance #04 En Route</div>
+      </div>
+      <button class="btn-sos-trigger" style="background:#ef4444; width:100%; justify-content:center;" onclick="closeModal('modal-call-simulator')">
+        🔴 END CALL
+      </button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
+  <script src="api.js"></script>
+  <script src="govt_hospitals_data.js"></script>
+  <script src="script.js"></script>
+  <script>
+    function switchAppTab(tabId) {
+      document.querySelectorAll('.app-tab-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.app-dock-btn').forEach(b => b.classList.remove('active'));
+      
+      const targetPane = document.getElementById(`pane-${tabId}`);
+      const targetBtn = document.getElementById(`dock-btn-${tabId}`);
+      if (targetPane) targetPane.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+
+      if (tabId === 'hosp' && typeof loadNearestHospitals === 'function') {
+        loadNearestHospitals();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadNearestHospitals();
+    });
+  </script>
+</body>
+</html>

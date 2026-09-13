@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RakshakAI — Unified AI Disaster Response Command System</title>
+  <meta name="description" content="RakshakAI Unified Single-Page Command Center with AI Rescue Priority Score, Dynamic Safe Route Map, Digital Twin Simulator, Satellite Image AI, and Multilingual NLP Emergency Parser.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* SPA View Switching Styles */
+    .view-section {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .view-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar (Unified SPA Links) -->
+  <nav class="navbar">
+    <a href="#home" onclick="switchView('home')" class="brand-logo">
+      <div class="shield-icon">🛡️</div>
+      <div class="brand-name">RAKSHAK<span>AI</span></div>
+    </a>
+    
+    <ul class="nav-links">
+      <li class="nav-item"><a id="nav-home" href="#home" onclick="switchView('home')" class="active">🏠 Home & SOS</a></li>
+      <li class="nav-item"><a id="nav-dashboard" href="#dashboard" onclick="switchView('dashboard')">🚨 Command Center</a></li>
+      <li class="nav-item"><a id="nav-analyzer" href="#analyzer" onclick="switchView('analyzer')">🎮 Digital Twin & AI Analyzer</a></li>
+      <li class="nav-item"><a id="nav-security" href="#security" onclick="switchView('security')">🔒 Multi-Agency & Offline</a></li>
+    </ul>
+    <div class="header-actions">
+      <span id="network-badge" class="badge-live"><span class="live-dot"></span> LIVE COMMAND</span>
+      <button class="btn-judge-mode" onclick="startJudgeDemoMode()">🎤 JUDGE DEMO MODE</button>
+      <button class="btn-sos-trigger" onclick="triggerSOSActionPlan()">🚨 SOS ACTION</button>
+    </div>
+  </nav>
+  <!-- Live Alert Ticker -->
+  <div class="ticker-bar">
+    <span class="ticker-label">COMMAND TICKER</span>
+    <div class="ticker-content">
+      <span>🌊 FLASH FLOOD WARNING: Yamuna Sector 9 Water Level Rising (+1.4m)</span>
+      <span>• 🚨 Area A Rescue Priority: 94/100 (CRITICAL URGENCY)</span>
+      <span>• 🛣️ Main Highway Bridge Blocked — Dynamic Reroute to Route B Active</span>
+      <span>• 🚑 5 Ambulances & 3 NDRF Boat Squads Deployed</span>
+    </div>
+  </div>
+  <!-- ==========================================================================
+       VIEW 1: HOME & SOS PORTAL
+       ========================================================================== -->
+  <main id="view-home" class="container view-section active">
+    <section style="text-align: center; padding: 2.5rem 1rem 3rem 1rem;">
+      <div class="tag tag-ai" style="margin-bottom: 1rem; font-size: 0.85rem; padding: 0.35rem 0.9rem;">
+        🤖 UNIFIED AI DECISION-SUPPORT SYSTEM FOR DISASTER MANAGEMENT
+      </div>
+      
+      <h1 style="font-family: var(--font-heading); font-size: 3.2rem; font-weight: 900; line-height: 1.15; margin-bottom: 1.25rem; background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        When Disasters Strike, <span style="background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RakshakAI Decides Fast.</span>
+      </h1>
+      
+      <p style="color: var(--text-muted); font-size: 1.15rem; max-width: 800px; margin: 0 auto 2.5rem auto; line-height: 1.6;">
+        RakshakAI doesn't just detect disasters. It evaluates who needs help first, automatically allocates critical resources, dynamically navigates blocked routes, and optimizes response teams in real time.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 1.25rem; flex-wrap: wrap;">
+        <button onclick="switchView('dashboard')" class="btn-sos-trigger" style="padding: 0.9rem 2rem; font-size: 1.05rem;">
+          🚨 OPEN LIVE COMMAND CENTER
+        </button>
+        <button class="btn-judge-mode" onclick="startJudgeDemoMode()" style="padding: 0.9rem 2rem; font-size: 1.05rem;">
+          🎤 START 2-MIN JUDGE DEMO
+        </button>
+      </div>
+    </section>
+    <!-- Key Metrics Stats Strip -->
+    <div class="stats-strip">
+      <div class="stat-card critical">
+        <div class="stat-icon">🚨</div>
+        <div class="stat-info">
+          <div class="stat-value">03</div>
+          <div class="stat-label">Active Disasters</div>
+        </div>
+      </div>
+      <div class="stat-card high">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <div class="stat-value">1,450</div>
+          <div class="stat-label">Total Affected</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🚑</div>
+        <div class="stat-info">
+          <div class="stat-value">07 / 10</div>
+          <div class="stat-label">Ambulances Ready</div>
+        </div>
+      </div>
+      <div class="stat-card low">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-info">
+          <div class="stat-value">94.2%</div>
+          <div class="stat-label">AI Confidence</div>
+        </div>
+      </div>
+    </div>
+    <!-- Multilingual NLP Emergency Reporting Showcase -->
+    <section class="glass-card" style="margin-top: 2rem; border-color: rgba(99, 102, 241, 0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #4 Showcase</span>
+          <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: #fff;">
+            📱 Multilingual Emergency Report Parser (Natural Language NLP)
+          </h2>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="map-btn" onclick="document.getElementById('nlp-report-input').value='Hamare yaha paani bahut badh gaya hai, building mein 20 log fase hue hain aur ek elderly person ko medicine chahiye.'; processNLPReport();">🇮🇳 Preset Hindi</button>
+          <button class="map-btn" onclick="document.getElementById('nlp-report-input').value='Flood water rising rapidly near Central School! 45 children trapped on 2nd floor, main road blocked.'; processNLPReport();">🇬🇧 Preset English</button>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div>
+          <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;">
+            Type or speak emergency report in any regional language:
+          </label>
+          <textarea id="nlp-report-input" rows="5" style="width: 100%; background: rgba(7, 11, 22, 0.8); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 1rem; color: #fff; font-family: var(--font-body); font-size: 0.95rem; resize: none;" placeholder="e.g. School ke paas bahut paani hai, 40 students andar hain aur road band hai..."></textarea>
+          
+          <button onclick="processNLPReport()" class="btn-judge-mode" style="width: 100%; margin-top: 0.8rem; justify-content: center; padding: 0.8rem;">
+            🤖 PARSE NLP & GENERATE PRIORITY SCORE
+          </button>
+        </div>
+        <div style="background: rgba(7, 11, 22, 0.9); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-primary);">AI EXTRACTED STRUCTURED DATA</span>
+            <span id="nlp-priority-tag" class="tag tag-critical">Priority Score: 94/100 — CRITICAL</span>
+          </div>
+          <div id="nlp-output-json" style="font-family: var(--font-mono); font-size: 0.8rem; color: #a5b4fc; background: rgba(0,0,0,0.4); padding: 0.8rem; border-radius: 6px; overflow-x: auto; min-height: 120px;">
+            {
+              "DisasterType": "Flood",
+              "EstimatedPeople": 20,
+              "VulnerableGroups": { "elderly": 1, "children": 2 },
+              "MedicalEmergency": true,
+              "ConfidenceScore": "94.8%"
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Feature Matrix -->
+    <h2 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: #fff; margin: 3rem 0 1.5rem 0; text-align: center;">
+      🏆 Feature Matrix
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+      <div class="glass-card">
+        <div style="font-size: 2rem; margin-bottom: 0.8rem;">🤖</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem;">1. Smart Rescue Priority Score</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Evaluates affected population, severity, critical medical cases, time sensitivity, and road accessibility to score areas 0–100.</p>
+        <span class="tag tag-critical" style="margin-top: 1rem;">Area A: 94/100 🔴 CRITICAL</span>
+      </div>
+      <div class="glass-card">
+        <div style="font-size: 2rem; margin-bottom: 0.8rem;">🗺️</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem;">2. Dynamic Safe Routing</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Calculates 🟢 Recommended, 🟡 Alternative, and 🔴 Blocked routes based on flood height, traffic, and bridge structural risk.</p>
+        <button onclick="switchView('dashboard')" class="map-btn" style="margin-top: 1rem;">View Command Map 🗺️</button>
+      </div>
+      <div class="glass-card">
+        <div style="font-size: 2rem; margin-bottom: 0.8rem;">🚑</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem;">3. Intelligent Resource Allocator</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Decides ambulance, rescue team, food, water, and medkit distribution with built-in "Why?" explainability popups.</p>
+        <span class="tag tag-ai" style="margin-top: 1rem;">Optimal Logistics AI</span>
+      </div>
+      <div class="glass-card">
+        <div style="font-size: 2rem; margin-bottom: 0.8rem;">🎮</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem;">4. Digital Twin "What-If" Simulator</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Live interactive sandbox allowing judges to adjust flood height, population spikes, and ambulance counts in real-time.</p>
+        <button onclick="switchView('analyzer')" class="map-btn" style="margin-top: 1rem;">Launch Simulator 🎮</button>
+      </div>
+      <div class="glass-card">
+        <div style="font-size: 2rem; margin-bottom: 0.8rem;">🛰️</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem;">5. Satellite & Drone AI Intelligence</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Analyzes Before vs After aerial photos to automatically outline flooded roads, collapsed bridges, and damage severity.</p>
+        <button onclick="switchView('analyzer')" class="map-btn" style="margin-top: 1rem;">View Drone AI 🛰️</button>
+      </div>
+      <div class="glass-card">
+        <div style="font-size: 2rem; margin-bottom: 0.8rem;">📡</div>
+        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem;">6. Offline Mode & Multi-Agency</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Caches emergency reports locally when cellular towers drop during disaster and dispatches tasks to Police, Fire, NDRF.</p>
+        <button onclick="switchView('security')" class="map-btn" style="margin-top: 1rem;">Multi-Agency Hub 🔒</button>
+      </div>
+    </div>
+  </main>
+  <!-- ==========================================================================
+       VIEW 2: LIVE COMMAND CENTER DASHBOARD
+       ========================================================================== -->
+  <div id="view-dashboard" class="dashboard-grid view-section">
+    <!-- Left Sidebar: Priority Area List -->
+    <div class="panel-left">
+      <div class="section-title">
+        <span>🤖 Rescue Priority Score</span>
+        <span class="tag tag-ai">Live Sorted</span>
+      </div>
+      <!-- Area A Card -->
+      <div class="area-card critical selected" onclick="openExplainModal('area-a')">
+        <div class="area-header">
+          <span class="area-name">Area A — Yamuna Sector 9</span>
+          <span class="priority-score score-critical">94/100 🔴</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          👥 850 Affected • 🏥 Medical Crisis • ⏱️ 2h Window
+        </div>
+        <div class="vulnerable-row">
+          <span class="vulnerable-badge">👵 42 Elderly</span>
+          <span class="vulnerable-badge">👶 17 Children</span>
+          <span class="vulnerable-badge" style="color: var(--accent-critical);">🏥 8 Critical</span>
+        </div>
+        <div style="margin-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; color: var(--accent-critical); font-weight: 700;">🛣️ Main Bridge Blocked</span>
+          <button class="btn-why" onclick="event.stopPropagation(); openExplainModal('area-a')">Why Area A? 🧠</button>
+        </div>
+      </div>
+      <!-- Area B Card -->
+      <div class="area-card high" onclick="openExplainModal('area-b')">
+        <div class="area-header">
+          <span class="area-name">Area B — North District</span>
+          <span class="priority-score score-high">72/100 🟠</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          👥 420 Affected • 💧 Water Shortage • 🛣️ Clear Route
+        </div>
+        <div class="vulnerable-row">
+          <span class="vulnerable-badge">👵 12 Elderly</span>
+          <span class="vulnerable-badge">👶 5 Children</span>
+          <span class="vulnerable-badge">🏥 2 Critical</span>
+        </div>
+        <div style="margin-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; color: var(--accent-low); font-weight: 700;">🟢 Route A Recommended</span>
+          <button class="btn-why" onclick="event.stopPropagation(); openExplainModal('area-b')">Why? 🧠</button>
+        </div>
+      </div>
+      <!-- Area C Card -->
+      <div class="area-card low" onclick="openExplainModal('area-c')">
+        <div class="area-header">
+          <span class="area-name">Area C — East Shelter</span>
+          <span class="priority-score score-low">38/100 🟢</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          👥 180 Affected • 🍱 Food Supply Needed
+        </div>
+        <div class="vulnerable-row">
+          <span class="vulnerable-badge">👵 5 Elderly</span>
+          <span class="vulnerable-badge">👶 2 Children</span>
+        </div>
+        <div style="margin-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; color: var(--accent-low); font-weight: 700;">🟢 Route A Recommended</span>
+          <button class="btn-why" onclick="event.stopPropagation(); openExplainModal('area-c')">Why? 🧠</button>
+        </div>
+      </div>
+      <!-- Quick Action Commander Button -->
+      <button class="btn-sos-trigger" onclick="triggerSOSActionPlan()" style="width: 100%; justify-content: center; padding: 0.9rem; margin-top: 1rem;">
+        🤖 GENERATE FULL RESCUE PLAN
+      </button>
+    </div>
+    <!-- Middle Panel: Interactive Command Canvas Map & AI Commander Action Plan -->
+    <div class="panel-middle">
+      <div class="section-title">
+        <span>🗺️ AI Dynamic Safe Route & Live Disaster Map</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="map-btn active" onclick="showToast('Showing Dynamic Safe Routes', 'info')">🟢 Recommended Route</button>
+          <button class="map-btn" onclick="showToast('Highlighting Blocked Highway Bridge', 'critical')">🔴 Blocked Route</button>
+        </div>
+      </div>
+      <!-- HTML5 Canvas Map -->
+      <div class="map-container">
+        <canvas id="command-map"></canvas>
+        
+        <div class="map-controls-overlay">
+          <button class="map-btn" onclick="showToast('Zooming Command Canvas', 'info')">🔍 Zoom In</button>
+          <button class="map-btn" onclick="showToast('Centering Area A Zone', 'info')">📍 Focus Area A</button>
+        </div>
+        <div class="map-legend">
+          <div class="legend-item"><span class="legend-line line-rec"></span> 🟢 Safe Route B</div>
+          <div class="legend-item"><span class="legend-line line-alt"></span> 🟡 Alternative Route</div>
+          <div class="legend-item"><span class="legend-line line-block"></span> 🔴 Blocked Bridge</div>
+        </div>
+      </div>
+      <!-- AI Rescue Commander Instant Action Plan Box -->
+      <div class="action-plan-box">
+        <div class="action-plan-header">
+          <div class="action-plan-title">
+            <span>🥇 AI RESCUE COMMANDER ACTION PLAN</span>
+          </div>
+          <span class="tag tag-critical">EXECUTION STATUS: READY</span>
+        </div>
+        <div class="action-plan-grid">
+          <div class="action-item">
+            <strong>🔴 Priority Target</strong>
+            <span>Area A (Score: 94/100)</span>
+          </div>
+          <div class="action-item">
+            <strong>🚑 Resource Dispatch</strong>
+            <span>2 Ambulances + 1 Rescue Team</span>
+          </div>
+          <div class="action-item">
+            <strong>💧 Relief Logistics</strong>
+            <span>500L Water + 1 Medkit</span>
+          </div>
+          <div class="action-item">
+            <strong>🛣️ Dynamic Path</strong>
+            <span style="color: var(--accent-low); font-weight: 700;">Route B (Highland Pass)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Right Panel: Intelligent Resource Allocation Grid -->
+    <div class="panel-right">
+      <div class="section-title">
+        <span>🚑 Intelligent Resource Allocation</span>
+        <span class="tag tag-ai">AI Decision Matrix</span>
+      </div>
+      <div class="glass-card" style="padding: 1rem;">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Prio</th>
+              <th>Allocation</th>
+              <th>Explain</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Area A</strong></td>
+              <td><span class="score-critical" style="font-weight: 800;">94</span></td>
+              <td>2 Ambulances, 1 NDRF, 500L Water</td>
+              <td><button class="btn-why" onclick="openExplainModal('area-a')">Why?</button></td>
+            </tr>
+            <tr>
+              <td><strong>Area B</strong></td>
+              <td><span class="score-high" style="font-weight: 800;">72</span></td>
+              <td>1 Ambulance, 400 Food Kits</td>
+              <td><button class="btn-why" onclick="openExplainModal('area-b')">Why?</button></td>
+            </tr>
+            <tr>
+              <td><strong>Area C</strong></td>
+              <td><span class="score-low" style="font-weight: 800;">38</span></td>
+              <td>200 Food Kits</td>
+              <td><button class="btn-why" onclick="openExplainModal('area-c')">Why?</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Resource Inventory Breakdown -->
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem;">📦 Command Base Stock:</div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+            <div style="display: flex; justify-content: space-between;">
+              <span>🚑 Ambulances Available:</span>
+              <strong style="color: #fff;">5 / 8 Units</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>👨‍🚒 Rescue Teams Available:</span>
+              <strong style="color: #fff;">3 / 4 Teams</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>💧 Water Supply:</span>
+              <strong style="color: #fff;">2,000 Liters</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🍱 Food Kits:</span>
+              <strong style="color: #fff;">1,000 Kits</strong>
+            </div>
+          </div>
+        </div>
+        <button class="btn-judge-mode" onclick="switchView('analyzer')" style="width: 100%; margin-top: 1.25rem; justify-content: center;">
+          🎮 LAUNCH WHAT-IF SIMULATOR
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ==========================================================================
+       VIEW 3: DIGITAL TWIN SIMULATOR & SATELLITE AI ANALYZER
+       ========================================================================== -->
+  <div id="view-analyzer" class="container view-section">
+    <!-- Feature 7: Digital Twin What-If Disaster Simulator -->
+    <section class="glass-card" style="margin-bottom: 2rem; border-color: rgba(99, 102, 241, 0.4);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #7 — JUDGE FAVORITE</span>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff;">
+            🎮 Disaster Digital Twin / "What-If" Simulation Mode
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Test how AI rescue recommendations dynamically adapt when disaster parameters change in real time.</p>
+        </div>
+        <button class="btn-judge-mode" onclick="document.getElementById('sim-pop-slider').value=3500; document.getElementById('sim-flood-slider').value=85; document.getElementById('sim-amb-slider').value=3; updateWhatIfSimulation();">
+          ⚡ Trigger Scenario: "Extreme Flood + Resource Shortage"
+        </button>
+      </div>
+      <!-- Simulator Slider Controls Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; background: rgba(7, 11, 22, 0.8); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+        
+        <!-- Population Slider -->
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>👥 Affected Population (Area A)</span>
+            <strong id="sim-pop-val" style="color: var(--accent-primary);">850</strong>
+          </div>
+          <input type="range" id="sim-pop-slider" min="500" max="5000" step="50" value="850" style="width: 100%; accent-color: var(--accent-primary);" oninput="updateWhatIfSimulation()">
+        </div>
+        <!-- Flood Level Slider -->
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>🌊 Flood Severity Level</span>
+            <strong id="sim-flood-val" style="color: var(--accent-high);">65%</strong>
+          </div>
+          <input type="range" id="sim-flood-slider" min="20" max="95" step="5" value="65" style="width: 100%; accent-color: var(--accent-high);" oninput="updateWhatIfSimulation()">
+        </div>
+        <!-- Available Ambulances Slider -->
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>🚑 Available Ambulances</span>
+            <strong id="sim-amb-val" style="color: var(--accent-low);">5</strong>
+          </div>
+          <input type="range" id="sim-amb-slider" min="1" max="12" step="1" value="5" style="width: 100%; accent-color: var(--accent-low);" oninput="updateWhatIfSimulation()">
+        </div>
+      </div>
+      <!-- Simulator Output Feedback Box -->
+      <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+        <div style="background: rgba(15, 23, 42, 0.9); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); text-align: center;">
+          <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Recalculated Area A Score</span>
+          <div id="area-a-score-display" style="font-family: var(--font-heading); font-size: 3rem; font-weight: 900; color: var(--accent-critical); margin: 0.3rem 0;">
+            94/100
+          </div>
+          <span class="tag tag-critical">🔴 CRITICAL URGENCY</span>
+        </div>
+        <div>
+          <div id="sim-alert-box" style="background: rgba(255, 59, 92, 0.15); border: 1px solid rgba(255, 59, 92, 0.4); padding: 1rem; border-radius: var(--radius-sm); color: #fff; font-size: 0.9rem; margin-bottom: 1rem;">
+            ⚠️ <strong>AI INSIGHT:</strong> Current resource allocation is optimal for 850 affected citizens. Increasing population above 2,000 requires minimum 8 ambulances.
+          </div>
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1rem; border-radius: var(--radius-sm); font-size: 0.88rem; color: #a7f3d0;">
+            🤖 <strong>Dynamic Decision Output:</strong> Route B selected because Main Highway Bridge risk level exceeds safety threshold (89%).
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Feature 9: Satellite & Drone Image AI Intelligence -->
+    <section class="glass-card" style="margin-bottom: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #9 — VISUAL AI</span>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff;">
+            🛰️ Satellite & Drone Image AI Analysis
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Automated computer vision detection of flooded roads, collapsed bridges, and submerged infrastructure.</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="map-btn active" onclick="showToast('Highlighting AI Damage Bounding Boxes', 'info')">🎯 Toggle AI Overlays</button>
+          <button class="map-btn" onclick="showToast('Analyzing New Image Sample...', 'success')">📷 Upload Image</button>
+        </div>
+      </div>
+      <!-- Before vs After Dual Image Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        
+        <!-- Before Satellite Image -->
+        <div style="position: relative; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--glass-border);">
+          <img src="assets/satellite_before.jpg" alt="Satellite Before Flood" style="width: 100%; height: 260px; object-fit: cover; display: block;">
+          <div style="position: absolute; top: 0.8rem; left: 0.8rem; background: rgba(0,0,0,0.7); padding: 0.3rem 0.7rem; border-radius: 4px; font-size: 0.8rem; font-weight: 700; color: var(--accent-low);">
+            📷 BEFORE DISASTER (Baseline)
+          </div>
+        </div>
+        <!-- After Satellite Image with AI Detection Overlay -->
+        <div style="position: relative; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--accent-critical);">
+          <img src="assets/satellite_after.jpg" alt="Satellite After Flood AI Detection" style="width: 100%; height: 260px; object-fit: cover; display: block;">
+          
+          <div style="position: absolute; top: 0.8rem; left: 0.8rem; background: rgba(255, 59, 92, 0.85); padding: 0.3rem 0.7rem; border-radius: 4px; font-size: 0.8rem; font-weight: 700; color: #fff;">
+            🚨 AFTER FLOOD (AI Computer Vision Analysis)
+          </div>
+          <!-- Bounding Boxes Overlay -->
+          <div style="position: absolute; top: 35%; left: 25%; width: 45%; height: 35%; border: 2px dashed #ff3b5c; background: rgba(255, 59, 92, 0.2); border-radius: 6px;">
+            <span style="position: absolute; top: -22px; left: 0; background: #ff3b5c; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 3px;">
+              🌊 FLOODED ZONE (98.4%)
+            </span>
+          </div>
+          <div style="position: absolute; top: 60%; left: 70%; width: 22%; height: 25%; border: 2px dashed #ff8800; background: rgba(255, 136, 0, 0.2); border-radius: 6px;">
+            <span style="position: absolute; top: -22px; left: 0; background: #ff8800; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 3px;">
+              ❌ COLLAPSED BRIDGE (94.1%)
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- AI Detection Summary Table -->
+      <div style="background: rgba(7, 11, 22, 0.9); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+        <h4 style="color: #fff; font-family: var(--font-heading); margin-bottom: 0.8rem; font-size: 1rem;">🔍 Computer Vision Findings Summary:</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.85rem;">
+          <div>• 🌊 <strong>Inundated Area:</strong> 4.2 km² Flooded</div>
+          <div>• 🛣️ <strong>Road Accessibility:</strong> 65% Blocked</div>
+          <div>• 🏚️ <strong>Structures Damaged:</strong> 42 Buildings</div>
+          <div>• 🎯 <strong>Suggested Shelter:</strong> East Highland School</div>
+        </div>
+      </div>
+    </section>
+    <!-- Feature 8: Disaster Severity Prediction -->
+    <section class="glass-card">
+      <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #8 — FORECASTING</span>
+      <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+        📈 Disaster Severity Prediction Timeline
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; text-align: center;">
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1.25rem; border-radius: var(--radius-sm);">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">CURRENT STATUS (00:00)</div>
+          <div style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--accent-low); margin: 0.4rem 0;">HIGH</div>
+          <span style="font-size: 0.78rem; color: var(--text-dim);">Water Level: 205.4m</span>
+        </div>
+        <div style="background: rgba(255, 136, 0, 0.1); border: 1px solid rgba(255, 136, 0, 0.3); padding: 1.25rem; border-radius: var(--radius-sm);">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">PREDICTED +2 HOURS</div>
+          <div style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--accent-high); margin: 0.4rem 0;">VERY HIGH</div>
+          <span style="font-size: 0.78rem; color: var(--text-dim);">Rainfall: +45mm/hr</span>
+        </div>
+        <div style="background: rgba(255, 59, 92, 0.1); border: 1px solid rgba(255, 59, 92, 0.3); padding: 1.25rem; border-radius: var(--radius-sm);">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">PREDICTED +4 HOURS</div>
+          <div style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--accent-critical); margin: 0.4rem 0;">🔴 CRITICAL</div>
+          <span style="font-size: 0.78rem; color: var(--text-dim);">Bridge Breach Risk: 96%</span>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- ==========================================================================
+       VIEW 4: MULTI-AGENCY COORDINATION & OFFLINE MODE
+       ========================================================================== -->
+  <div id="view-security" class="container view-section">
+    <!-- Feature 10: Offline / Low-Connectivity Emergency Mode -->
+    <section class="glass-card" style="margin-bottom: 2rem; border-color: rgba(56, 189, 248, 0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #10 — INDIA REAL-WORLD FOCUS</span>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff;">
+            📡 Offline & Low-Connectivity Emergency Report Sync
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Ensures emergency reports are stored locally during cell tower outage and automatically synchronized once network restores.</p>
+        </div>
+        <button id="btn-toggle-offline" class="map-btn" onclick="toggleOfflineModeSimulation()">
+          📡 Sim Cell Outage (Toggle Offline)
+        </button>
+      </div>
+      <!-- Offline Status Banner -->
+      <div id="offline-status-banner" style="display: none; background: rgba(255, 136, 0, 0.15); border: 1px solid rgba(255, 136, 0, 0.4); padding: 1rem; border-radius: var(--radius-sm); color: #fff; margin-bottom: 1.5rem;">
+        ⚠️ <strong>OFFLINE MODE ACTIVE:</strong> Cellular connectivity lost. 2 local emergency reports queued in LocalStorage.
+        <button class="btn-why" style="margin-left: 1rem;" onclick="syncOfflineQueue()">🔄 Force Sync to Server</button>
+      </div>
+      <!-- Queued Reports Table -->
+      <div style="background: rgba(7, 11, 22, 0.9); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+        <h4 style="color: #fff; font-family: var(--font-heading); margin-bottom: 0.8rem;">📋 Offline Local Queue (Stored On-Device):</h4>
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Reporter</th>
+              <th>Location</th>
+              <th>Details</th>
+              <th>Sync Status</th>
+            </tr>
+          </thead>
+          <tbody id="offline-queue-body">
+            <tr>
+              <td>23:42:10</td>
+              <td>Citizen #4920</td>
+              <td>Yamuna Sector 9</td>
+              <td>15 trapped on roof, water 4ft</td>
+              <td><span class="tag tag-low">SYNCED ✅</span></td>
+            </tr>
+            <tr>
+              <td>23:44:05</td>
+              <td>Rescuer #0821</td>
+              <td>North Sector 4</td>
+              <td>Medical kit delivered</td>
+              <td><span class="tag tag-low">SYNCED ✅</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <!-- Feature 11: Multi-Agency Coordination Hub -->
+    <section class="glass-card" style="margin-bottom: 2rem;">
+      <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #11 — COMMAND COORDINATION</span>
+      <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 1.25rem;">
+        🔄 Multi-Agency Task Assignment & Coordination
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+        
+        <!-- Police -->
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #fff;">👮 Police Department</span>
+            <span class="tag tag-high">3 Units</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Assigned Task: Perimeter lockdown & highway traffic rerouting around Highway Bridge 4.</p>
+        </div>
+        <!-- Fire Department -->
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #fff;">🚒 Fire Brigade</span>
+            <span class="tag tag-critical">Area A</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Assigned Task: Water pumping & high-capacity structural extraction in flooded Sector 9.</p>
+        </div>
+        <!-- Ambulance -->
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #fff;">🚑 Medical Fleet</span>
+            <span class="tag tag-low">5 Dispatched</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Assigned Task: Critical patient evacuation from Sector 9 to City General Hospital.</p>
+        </div>
+        <!-- NDRF Rescue Squad -->
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #fff;">👨‍🚒 NDRF Team</span>
+            <span class="tag tag-critical">Boat Unit</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Assigned Task: Rubber boat evacuation across Yamuna riverbank flooded zones.</p>
+        </div>
+      </div>
+    </section>
+    <!-- Feature 15: Explainable AI Audit Log & Human Override -->
+    <section class="glass-card">
+      <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #15 — GOVERNANCE & SAFETY</span>
+      <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+        🧠 Explainable AI Decision Log & Human Override Thresholds
+      </h2>
+      <div style="background: rgba(7, 11, 22, 0.9); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Action Recommended</th>
+              <th>Confidence</th>
+              <th>AI Decision Math</th>
+              <th>Human Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>#AI-892</td>
+              <td>Dispatch 2 Ambulances to Area A via Route B</td>
+              <td><span style="color: var(--accent-low); font-weight: 700;">94.2%</span></td>
+              <td>Pop: +28, Med: +25, RouteBlock: +16</td>
+              <td><span class="tag tag-low">APPROVED BY COMMANDER</span></td>
+            </tr>
+            <tr>
+              <td>#AI-893</td>
+              <td>Re-allocate 400 Food Kits to Area B</td>
+              <td><span style="color: var(--accent-low); font-weight: 700;">91.8%</span></td>
+              <td>Pop: +18, FoodShortage: +22</td>
+              <td><span class="tag tag-low">APPROVED BY COMMANDER</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <!-- Modals -->
+  <!-- SOS Action Plan Modal -->
+  <div id="modal-action-plan" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🚨 SOS → AI ACTION PLAN GENERATOR</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-action-plan')">✕</button>
+      </div>
+      <div id="action-plan-content">
+        <!-- Injected via script.js -->
+      </div>
+    </div>
+  </div>
+  <!-- Explain AI Decision Modal -->
+  <div id="modal-explain" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🧠 AI EXPLAINABILITY LAYER — "WHY?" DECISION MATH</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-explain')">✕</button>
+      </div>
+      <div id="explain-content">
+        <!-- Injected via script.js -->
+      </div>
+    </div>
+  </div>
+  <footer class="footer">
+    <p>🛡️ <strong>RakshakAI Command System</strong> — Combined SPA Command Center | Powered by <span>AI Decision-Support Pipeline</span></p>
+  </footer>
+  <script src="script.js"></script>
+  <script>
+    // --- Unified SPA View Router ---
+    function switchView(viewName) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.nav-item a').forEach(a => a.classList.remove('active'));
+      const targetSec = document.getElementById(`view-${viewName}`);
+      const targetNav = document.getElementById(`nav-${viewName}`);
+      if (targetSec) targetSec.classList.add('active');
+      if (targetNav) targetNav.classList.add('active');
+      // Scroll top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Trigger map canvas resize if entering dashboard
+      if (viewName === 'dashboard' && typeof initCommandMapCanvas === 'function') {
+        setTimeout(initCommandMapCanvas, 100);
+      }
+    }
+    // Auto router from URL hash
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.replace('#', '') || 'home';
+      switchView(hash);
+    });
+    // Offline Toggle Simulation
+    function toggleOfflineModeSimulation() {
+      RakshakState.isOffline = !RakshakState.isOffline;
+      const badge = document.getElementById('network-badge');
+      const banner = document.getElementById('offline-status-banner');
+      const btn = document.getElementById('btn-toggle-offline');
+      if (RakshakState.isOffline) {
+        badge.style.background = 'rgba(255, 136, 0, 0.15)';
+        badge.style.borderColor = 'rgba(255, 136, 0, 0.4)';
+        badge.style.color = 'var(--accent-high)';
+        badge.innerHTML = '<span class="live-dot" style="background: var(--accent-high);"></span> OFFLINE MODE';
+        if (banner) banner.style.display = 'block';
+        if (btn) btn.innerText = '📡 Reconnect Cellular Network';
+        showToast('⚠️ Network connection dropped! Emergency reports will queue locally.', 'critical');
+      } else {
+        badge.style.background = 'rgba(16, 185, 129, 0.15)';
+        badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        badge.style.color = 'var(--accent-low)';
+        badge.innerHTML = '<span class="live-dot" style="background: var(--accent-low);"></span> LIVE COMMAND';
+        if (banner) banner.style.display = 'none';
+        if (btn) btn.innerText = '📡 Sim Cell Outage (Toggle Offline)';
+        showToast('✅ Network restored! Auto-synchronizing offline reports with server.', 'success');
+      }
+    }
+    function syncOfflineQueue() {
+      showToast('🔄 Syncing offline queued reports with RakshakAI Central Engine...', 'success');
+      setTimeout(() => {
+        showToast('✅ Sync complete! 2 Reports added to Live Command Matrix.', 'success');
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

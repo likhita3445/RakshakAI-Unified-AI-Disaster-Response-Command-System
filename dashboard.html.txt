@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RakshakAI — Live Command Center & Rescue Commander</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html" class="brand-logo">
+      <div class="shield-icon">🛡️</div>
+      <div class="brand-name">RAKSHAK<span>AI</span></div>
+    </a>
+    
+    <ul class="nav-links">
+      <li class="nav-item"><a href="index.html">🏠 Home & SOS</a></li>
+      <li class="nav-item"><a href="dashboard.html" class="active">🚨 Command Center</a></li>
+      <li class="nav-item"><a href="analyzer.html">🎮 Digital Twin & AI Analyzer</a></li>
+      <li class="nav-item"><a href="security.html">🔒 Multi-Agency & Offline</a></li>
+    </ul>
+    <div class="header-actions">
+      <span class="badge-live"><span class="live-dot"></span> COMMAND ACTIVE</span>
+      <button class="btn-judge-mode" onclick="startJudgeDemoMode()">🎤 JUDGE DEMO MODE</button>
+      <button class="btn-sos-trigger" onclick="triggerSOSActionPlan()">🚨 SOS ACTION</button>
+    </div>
+  </nav>
+  <!-- Live Alert Ticker -->
+  <div class="ticker-bar">
+    <span class="ticker-label">COMMAND TICKER</span>
+    <div class="ticker-content">
+      <span>🚨 AREA A PRIORITY SCORE: 94/100 (CRITICAL)</span>
+      <span>• 🌊 River Yamuna Water Level: 205.8m (+0.4m/hr)</span>
+      <span>• 🚑 Units 01 & 04 Dispatched on Route B (Highland Pass)</span>
+      <span>• 👨‍🚒 NDRF Boat Squad deployed to Sector 9</span>
+    </div>
+  </div>
+  <!-- Dashboard Main Layout -->
+  <div class="dashboard-grid">
+    <!-- Left Sidebar: Priority Area List -->
+    <div class="panel-left">
+      <div class="section-title">
+        <span>🤖 Rescue Priority Score</span>
+        <span class="tag tag-ai">Live Sorted</span>
+      </div>
+      <!-- Area A Card -->
+      <div class="area-card critical selected" onclick="openExplainModal('area-a')">
+        <div class="area-header">
+          <span class="area-name">Area A — Yamuna Sector 9</span>
+          <span class="priority-score score-critical">94/100 🔴</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          👥 850 Affected • 🏥 Medical Crisis • ⏱️ 2h Window
+        </div>
+        <div class="vulnerable-row">
+          <span class="vulnerable-badge">👵 42 Elderly</span>
+          <span class="vulnerable-badge">👶 17 Children</span>
+          <span class="vulnerable-badge" style="color: var(--accent-critical);">🏥 8 Critical</span>
+        </div>
+        <div style="margin-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; color: var(--accent-critical); font-weight: 700;">🛣️ Main Bridge Blocked</span>
+          <button class="btn-why" onclick="event.stopPropagation(); openExplainModal('area-a')">Why Area A? 🧠</button>
+        </div>
+      </div>
+      <!-- Area B Card -->
+      <div class="area-card high" onclick="openExplainModal('area-b')">
+        <div class="area-header">
+          <span class="area-name">Area B — North District</span>
+          <span class="priority-score score-high">72/100 🟠</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          👥 420 Affected • 💧 Water Shortage • 🛣️ Clear Route
+        </div>
+        <div class="vulnerable-row">
+          <span class="vulnerable-badge">👵 12 Elderly</span>
+          <span class="vulnerable-badge">👶 5 Children</span>
+          <span class="vulnerable-badge">🏥 2 Critical</span>
+        </div>
+        <div style="margin-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; color: var(--accent-low); font-weight: 700;">🟢 Route A Recommended</span>
+          <button class="btn-why" onclick="event.stopPropagation(); openExplainModal('area-b')">Why? 🧠</button>
+        </div>
+      </div>
+      <!-- Area C Card -->
+      <div class="area-card low" onclick="openExplainModal('area-c')">
+        <div class="area-header">
+          <span class="area-name">Area C — East Shelter</span>
+          <span class="priority-score score-low">38/100 🟢</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          👥 180 Affected • 🍱 Food Supply Needed
+        </div>
+        <div class="vulnerable-row">
+          <span class="vulnerable-badge">👵 5 Elderly</span>
+          <span class="vulnerable-badge">👶 2 Children</span>
+        </div>
+        <div style="margin-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; color: var(--accent-low); font-weight: 700;">🟢 Route A Recommended</span>
+          <button class="btn-why" onclick="event.stopPropagation(); openExplainModal('area-c')">Why? 🧠</button>
+        </div>
+      </div>
+      <!-- Quick Action Commander Button -->
+      <button class="btn-sos-trigger" onclick="triggerSOSActionPlan()" style="width: 100%; justify-content: center; padding: 0.9rem; margin-top: 1rem;">
+        🤖 GENERATE FULL RESCUE PLAN
+      </button>
+    </div>
+    <!-- Middle Panel: Interactive Command Canvas Map & AI Commander Action Plan -->
+    <div class="panel-middle">
+      <div class="section-title">
+        <span>🗺️ AI Dynamic Safe Route & Live Disaster Map</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="map-btn active" onclick="showToast('Showing Dynamic Safe Routes', 'info')">🟢 Recommended Route</button>
+          <button class="map-btn" onclick="showToast('Highlighting Blocked Highway Bridge', 'critical')">🔴 Blocked Route</button>
+        </div>
+      </div>
+      <!-- HTML5 Canvas Map -->
+      <div class="map-container">
+        <canvas id="command-map"></canvas>
+        
+        <div class="map-controls-overlay">
+          <button class="map-btn" onclick="showToast('Zooming Command Canvas', 'info')">🔍 Zoom In</button>
+          <button class="map-btn" onclick="showToast('Centering Area A Zone', 'info')">📍 Focus Area A</button>
+        </div>
+        <div class="map-legend">
+          <div class="legend-item"><span class="legend-line line-rec"></span> 🟢 Safe Route B</div>
+          <div class="legend-item"><span class="legend-line line-alt"></span> 🟡 Alternative Route</div>
+          <div class="legend-item"><span class="legend-line line-block"></span> 🔴 Blocked Bridge</div>
+        </div>
+      </div>
+      <!-- AI Rescue Commander Instant Action Plan Box -->
+      <div class="action-plan-box">
+        <div class="action-plan-header">
+          <div class="action-plan-title">
+            <span>🥇 AI RESCUE COMMANDER ACTION PLAN</span>
+          </div>
+          <span class="tag tag-critical">EXECUTION STATUS: READY</span>
+        </div>
+        <div class="action-plan-grid">
+          <div class="action-item">
+            <strong>🔴 Priority Target</strong>
+            <span>Area A (Score: 94/100)</span>
+          </div>
+          <div class="action-item">
+            <strong>🚑 Resource Dispatch</strong>
+            <span>2 Ambulances + 1 Rescue Team</span>
+          </div>
+          <div class="action-item">
+            <strong>💧 Relief Logistics</strong>
+            <span>500L Water + 1 Medkit</span>
+          </div>
+          <div class="action-item">
+            <strong>🛣️ Dynamic Path</strong>
+            <span style="color: var(--accent-low); font-weight: 700;">Route B (Highland Pass)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Right Panel: Intelligent Resource Allocation Grid -->
+    <div class="panel-right">
+      <div class="section-title">
+        <span>🚑 Intelligent Resource Allocation</span>
+        <span class="tag tag-ai">AI Decision Matrix</span>
+      </div>
+      <div class="glass-card" style="padding: 1rem;">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Prio</th>
+              <th>Allocation</th>
+              <th>Explain</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Area A</strong></td>
+              <td><span class="score-critical" style="font-weight: 800;">94</span></td>
+              <td>2 Ambulances, 1 NDRF, 500L Water</td>
+              <td><button class="btn-why" onclick="openExplainModal('area-a')">Why?</button></td>
+            </tr>
+            <tr>
+              <td><strong>Area B</strong></td>
+              <td><span class="score-high" style="font-weight: 800;">72</span></td>
+              <td>1 Ambulance, 400 Food Kits</td>
+              <td><button class="btn-why" onclick="openExplainModal('area-b')">Why?</button></td>
+            </tr>
+            <tr>
+              <td><strong>Area C</strong></td>
+              <td><span class="score-low" style="font-weight: 800;">38</span></td>
+              <td>200 Food Kits</td>
+              <td><button class="btn-why" onclick="openExplainModal('area-c')">Why?</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Resource Inventory Breakdown -->
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem;">📦 Command Base Stock:</div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+            <div style="display: flex; justify-content: space-between;">
+              <span>🚑 Ambulances Available:</span>
+              <strong style="color: #fff;">5 / 8 Units</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>👨‍🚒 Rescue Teams Available:</span>
+              <strong style="color: #fff;">3 / 4 Teams</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>💧 Water Supply:</span>
+              <strong style="color: #fff;">2,000 Liters</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🍱 Food Kits:</span>
+              <strong style="color: #fff;">1,000 Kits</strong>
+            </div>
+          </div>
+        </div>
+        <button class="btn-judge-mode" onclick="window.location.href='analyzer.html'" style="width: 100%; margin-top: 1.25rem; justify-content: center;">
+          🎮 LAUNCH WHAT-IF SIMULATOR
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Explain AI Decision Modal -->
+  <div id="modal-explain" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🧠 AI EXPLAINABILITY LAYER — "WHY?" DECISION MATH</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-explain')">✕</button>
+      </div>
+      <div id="explain-content">
+        <!-- Injected via script.js -->
+      </div>
+    </div>
+  </div>
+  <!-- SOS Action Plan Modal -->
+  <div id="modal-action-plan" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🚨 SOS → AI ACTION PLAN GENERATOR</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-action-plan')">✕</button>
+      </div>
+      <div id="action-plan-content">
+        <!-- Injected via script.js -->
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

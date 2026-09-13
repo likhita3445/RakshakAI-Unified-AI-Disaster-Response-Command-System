@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RakshakAI — Multi-Agency Coordination & Offline Mode</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html" class="brand-logo">
+      <div class="shield-icon">🛡️</div>
+      <div class="brand-name">RAKSHAK<span>AI</span></div>
+    </a>
+    
+    <ul class="nav-links">
+      <li class="nav-item"><a href="index.html">🏠 Home & SOS</a></li>
+      <li class="nav-item"><a href="dashboard.html">🚨 Command Center</a></li>
+      <li class="nav-item"><a href="analyzer.html">🎮 Digital Twin & AI Analyzer</a></li>
+      <li class="nav-item"><a href="security.html" class="active">🔒 Multi-Agency & Offline</a></li>
+    </ul>
+    <div class="header-actions">
+      <span id="network-badge" class="badge-live" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: var(--accent-low);">
+        <span class="live-dot" style="background: var(--accent-low);"></span> ONLINE
+      </span>
+      <button class="btn-judge-mode" onclick="startJudgeDemoMode()">🎤 JUDGE DEMO MODE</button>
+      <button class="btn-sos-trigger" onclick="triggerSOSActionPlan()">🚨 SOS ACTION</button>
+    </div>
+  </nav>
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Feature 10: Offline / Low-Connectivity Emergency Mode -->
+    <section class="glass-card" style="margin-bottom: 2rem; border-color: rgba(56, 189, 248, 0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #10 — INDIA REAL-WORLD FOCUS</span>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff;">
+            📡 Offline & Low-Connectivity Emergency Report Sync
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Ensures emergency reports are stored locally during cell tower outage and automatically synchronized once network restores.</p>
+        </div>
+        <button id="btn-toggle-offline" class="map-btn" onclick="toggleOfflineModeSimulation()">
+          📡 Sim Cell Outage (Toggle Offline)
+        </button>
+      </div>
+      <!-- Offline Status Banner -->
+      <div id="offline-status-banner" style="display: none; background: rgba(255, 136, 0, 0.15); border: 1px solid rgba(255, 136, 0, 0.4); padding: 1rem; border-radius: var(--radius-sm); color: #fff; margin-bottom: 1.5rem;">
+        ⚠️ <strong>OFFLINE MODE ACTIVE:</strong> Cellular connectivity lost. 2 local emergency reports queued in LocalStorage.
+        <button class="btn-why" style="margin-left: 1rem;" onclick="syncOfflineQueue()">🔄 Force Sync to Server</button>
+      </div>
+      <!-- Queued Reports Table -->
+      <div style="background: var(--bg-panel); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+        <h4 style="color: #fff; font-family: var(--font-heading); margin-bottom: 0.8rem;">📋 Offline Local Queue (Stored On-Device):</h4>
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Reporter</th>
+              <th>Location</th>
+              <th>Details</th>
+              <th>Sync Status</th>
+            </tr>
+          </thead>
+          <tbody id="offline-queue-body">
+            <tr>
+              <td>23:42:10</td>
+              <td>Citizen #4920</td>
+              <td>Yamuna Sector 9</td>
+              <td>15 trapped on roof, water 4ft</td>
+              <td><span class="tag tag-low">SYNCED ✅</span></td>
+            </tr>
+            <tr>
+              <td>23:44:05</td>
+              <td>Rescuer #0821</td>
+              <td>North Sector 4</td>
+              <td>Medical kit delivered</td>
+              <td><span class="tag tag-low">SYNCED ✅</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <!-- Feature 11: Multi-Agency Coordination Hub -->
+    <section class="glass-card" style="margin-bottom: 2rem;">
+      <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #11 — COMMAND COORDINATION</span>
+      <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 1.25rem;">
+        🔄 Multi-Agency Task Assignment & Coordination
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+        
+        <!-- Police -->
+        <div style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #fff;">👮 Police Department</span>
+            <span class="tag tag-high">3 Units</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Assigned Task: Perimeter lockdown & highway traffic rerouting around Highway Bridge 4.</p>
+        </div>
+        <!-- Fire Department -->
+        <div style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #fff;">🚒 Fire Brigade</span>
+            <span class="tag tag-critical">Area A</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Assigned Task: Water pumping & high-capacity structural extraction in flooded Sector 9.</p>
+        </div>
+        <!-- Ambulance -->
+        <div style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #fff;">🚑 Medical Fleet</span>
+            <span class="tag tag-low">5 Dispatched</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Assigned Task: Critical patient evacuation from Sector 9 to City General Hospital.</p>
+        </div>
+        <!-- NDRF Rescue Squad -->
+        <div style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #fff;">👨‍🚒 NDRF Team</span>
+            <span class="tag tag-critical">Boat Unit</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Assigned Task: Rubber boat evacuation across Yamuna riverbank flooded zones.</p>
+        </div>
+      </div>
+    </section>
+    <!-- Feature 15: Explainable AI Audit Log & Human Override -->
+    <section class="glass-card">
+      <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #15 — GOVERNANCE & SAFETY</span>
+      <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+        🧠 Explainable AI Decision Log & Human Override Thresholds
+      </h2>
+      <div style="background: var(--bg-panel); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Action Recommended</th>
+              <th>Confidence</th>
+              <th>AI Decision Math</th>
+              <th>Human Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>#AI-892</td>
+              <td>Dispatch 2 Ambulances to Area A via Route B</td>
+              <td><span style="color: var(--accent-low); font-weight: 700;">94.2%</span></td>
+              <td>Pop: +28, Med: +25, RouteBlock: +16</td>
+              <td><span class="tag tag-low">APPROVED BY COMMANDER</span></td>
+            </tr>
+            <tr>
+              <td>#AI-893</td>
+              <td>Re-allocate 400 Food Kits to Area B</td>
+              <td><span style="color: var(--accent-low); font-weight: 700;">91.8%</span></td>
+              <td>Pop: +18, FoodShortage: +22</td>
+              <td><span class="tag tag-low">APPROVED BY COMMANDER</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <!-- SOS Action Plan Modal -->
+  <div id="modal-action-plan" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🚨 SOS → AI ACTION PLAN GENERATOR</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-action-plan')">✕</button>
+      </div>
+      <div id="action-plan-content">
+        <!-- Injected via script.js -->
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  <script>
+    function toggleOfflineModeSimulation() {
+      RakshakState.isOffline = !RakshakState.isOffline;
+      const badge = document.getElementById('network-badge');
+      const banner = document.getElementById('offline-status-banner');
+      const btn = document.getElementById('btn-toggle-offline');
+      if (RakshakState.isOffline) {
+        badge.style.background = 'rgba(255, 136, 0, 0.15)';
+        badge.style.borderColor = 'rgba(255, 136, 0, 0.4)';
+        badge.style.color = 'var(--accent-high)';
+        badge.innerHTML = '<span class="live-dot" style="background: var(--accent-high);"></span> OFFLINE MODE';
+        banner.style.display = 'block';
+        btn.innerText = '📡 Reconnect Cellular Network';
+        showToast('⚠️ Network connection dropped! Emergency reports will queue locally.', 'critical');
+      } else {
+        badge.style.background = 'rgba(16, 185, 129, 0.15)';
+        badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        badge.style.color = 'var(--accent-low)';
+        badge.innerHTML = '<span class="live-dot" style="background: var(--accent-low);"></span> ONLINE';
+        banner.style.display = 'none';
+        btn.innerText = '📡 Sim Cell Outage (Toggle Offline)';
+        showToast('✅ Network restored! Auto-synchronizing offline reports with server.', 'success');
+      }
+    }
+    function syncOfflineQueue() {
+      showToast('🔄 Syncing offline queued reports with RakshakAI Central Engine...', 'success');
+      setTimeout(() => {
+        showToast('✅ Sync complete! 2 Reports added to Live Command Matrix.', 'success');
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

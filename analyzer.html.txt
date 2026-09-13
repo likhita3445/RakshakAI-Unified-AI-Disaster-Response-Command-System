@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RakshakAI — Digital Twin Simulator & Satellite AI Analyzer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html" class="brand-logo">
+      <div class="shield-icon">🛡️</div>
+      <div class="brand-name">RAKSHAK<span>AI</span></div>
+    </a>
+    
+    <ul class="nav-links">
+      <li class="nav-item"><a href="index.html">🏠 Home & SOS</a></li>
+      <li class="nav-item"><a href="dashboard.html">🚨 Command Center</a></li>
+      <li class="nav-item"><a href="analyzer.html" class="active">🎮 Digital Twin & AI Analyzer</a></li>
+      <li class="nav-item"><a href="security.html">🔒 Multi-Agency & Offline</a></li>
+    </ul>
+    <div class="header-actions">
+      <span class="badge-live"><span class="live-dot"></span> SIMULATOR ACTIVE</span>
+      <button class="btn-judge-mode" onclick="startJudgeDemoMode()">🎤 JUDGE DEMO MODE</button>
+      <button class="btn-sos-trigger" onclick="triggerSOSActionPlan()">🚨 SOS ACTION</button>
+    </div>
+  </nav>
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Feature 7: Digital Twin What-If Disaster Simulator -->
+    <section class="glass-card" style="margin-bottom: 2rem; border-color: rgba(99, 102, 241, 0.4);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #7 — JUDGE FAVORITE</span>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff;">
+            🎮 Disaster Digital Twin / "What-If" Simulation Mode
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Test how AI rescue recommendations dynamically adapt when disaster parameters change in real time.</p>
+        </div>
+        <button class="btn-judge-mode" onclick="document.getElementById('sim-pop-slider').value=3500; document.getElementById('sim-flood-slider').value=85; document.getElementById('sim-amb-slider').value=3; updateWhatIfSimulation();">
+          ⚡ Trigger Scenario: "Extreme Flood + Resource Shortage"
+        </button>
+      </div>
+      <!-- Simulator Slider Controls Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; background: rgba(7, 11, 22, 0.8); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+        
+        <!-- Population Slider -->
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>👥 Affected Population (Area A)</span>
+            <strong id="sim-pop-val" style="color: var(--accent-primary);">850</strong>
+          </div>
+          <input type="range" id="sim-pop-slider" min="500" max="5000" step="50" value="850" style="width: 100%; accent-color: var(--accent-primary);" oninput="updateWhatIfSimulation()">
+        </div>
+        <!-- Flood Level Slider -->
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>🌊 Flood Severity Level</span>
+            <strong id="sim-flood-val" style="color: var(--accent-high);">65%</strong>
+          </div>
+          <input type="range" id="sim-flood-slider" min="20" max="95" step="5" value="65" style="width: 100%; accent-color: var(--accent-high);" oninput="updateWhatIfSimulation()">
+        </div>
+        <!-- Available Ambulances Slider -->
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>🚑 Available Ambulances</span>
+            <strong id="sim-amb-val" style="color: var(--accent-low);">5</strong>
+          </div>
+          <input type="range" id="sim-amb-slider" min="1" max="12" step="1" value="5" style="width: 100%; accent-color: var(--accent-low);" oninput="updateWhatIfSimulation()">
+        </div>
+      </div>
+      <!-- Simulator Output Feedback Box -->
+      <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+        <div style="background: rgba(15, 23, 42, 0.9); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); text-align: center;">
+          <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Recalculated Area A Score</span>
+          <div id="area-a-score-display" style="font-family: var(--font-heading); font-size: 3rem; font-weight: 900; color: var(--accent-critical); margin: 0.3rem 0;">
+            94/100
+          </div>
+          <span class="tag tag-critical">🔴 CRITICAL URGENCY</span>
+        </div>
+        <div>
+          <div id="sim-alert-box" style="background: rgba(255, 59, 92, 0.15); border: 1px solid rgba(255, 59, 92, 0.4); padding: 1rem; border-radius: var(--radius-sm); color: #fff; font-size: 0.9rem; margin-bottom: 1rem;">
+            ⚠️ <strong>AI INSIGHT:</strong> Current resource allocation is optimal for 850 affected citizens. Increasing population above 2,000 requires minimum 8 ambulances.
+          </div>
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1rem; border-radius: var(--radius-sm); font-size: 0.88rem; color: #a7f3d0;">
+            🤖 <strong>Dynamic Decision Output:</strong> Route B selected because Main Highway Bridge risk level exceeds safety threshold (89%).
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Feature 9: Satellite & Drone Image AI Intelligence -->
+    <section id="satellite" class="glass-card" style="margin-bottom: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #9 — VISUAL AI</span>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff;">
+            🛰️ Satellite & Drone Image AI Analysis
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Automated computer vision detection of flooded roads, collapsed bridges, and submerged infrastructure.</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="map-btn active" onclick="showToast('Highlighting AI Damage Bounding Boxes', 'info')">🎯 Toggle AI Overlays</button>
+          <button class="map-btn" onclick="showToast('Analyzing New Image Sample...', 'success')">📷 Upload Image</button>
+        </div>
+      </div>
+      <!-- Before vs After Dual Image Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        
+        <!-- Before Satellite Image -->
+        <div style="position: relative; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--glass-border);">
+          <img src="assets/satellite_before.jpg" alt="Satellite Before Flood" style="width: 100%; height: 260px; object-fit: cover; display: block;">
+          <div style="position: absolute; top: 0.8rem; left: 0.8rem; background: rgba(0,0,0,0.7); padding: 0.3rem 0.7rem; border-radius: 4px; font-size: 0.8rem; font-weight: 700; color: var(--accent-low);">
+            📷 BEFORE DISASTER (Baseline)
+          </div>
+        </div>
+        <!-- After Satellite Image with AI Detection Overlay -->
+        <div style="position: relative; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--accent-critical);">
+          <img src="assets/satellite_after.jpg" alt="Satellite After Flood AI Detection" style="width: 100%; height: 260px; object-fit: cover; display: block;">
+          
+          <div style="position: absolute; top: 0.8rem; left: 0.8rem; background: rgba(255, 59, 92, 0.85); padding: 0.3rem 0.7rem; border-radius: 4px; font-size: 0.8rem; font-weight: 700; color: #fff;">
+            🚨 AFTER FLOOD (AI Computer Vision Analysis)
+          </div>
+          <!-- Bounding Boxes Overlay -->
+          <div style="position: absolute; top: 35%; left: 25%; width: 45%; height: 35%; border: 2px dashed #ff3b5c; background: rgba(255, 59, 92, 0.2); border-radius: 6px;">
+            <span style="position: absolute; top: -22px; left: 0; background: #ff3b5c; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 3px;">
+              🌊 FLOODED ZONE (98.4%)
+            </span>
+          </div>
+          <div style="position: absolute; top: 60%; left: 70%; width: 22%; height: 25%; border: 2px dashed #ff8800; background: rgba(255, 136, 0, 0.2); border-radius: 6px;">
+            <span style="position: absolute; top: -22px; left: 0; background: #ff8800; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 3px;">
+              ❌ COLLAPSED BRIDGE (94.1%)
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- AI Detection Summary Table -->
+      <div style="background: rgba(7, 11, 22, 0.9); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+        <h4 style="color: #fff; font-family: var(--font-heading); margin-bottom: 0.8rem; font-size: 1rem;">🔍 Computer Vision Findings Summary:</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.85rem;">
+          <div>• 🌊 <strong>Inundated Area:</strong> 4.2 km² Flooded</div>
+          <div>• 🛣️ <strong>Road Accessibility:</strong> 65% Blocked</div>
+          <div>• 🏚️ <strong>Structures Damaged:</strong> 42 Buildings</div>
+          <div>• 🎯 <strong>Suggested Shelter:</strong> East Highland School</div>
+        </div>
+      </div>
+    </section>
+    <!-- Feature 8: Disaster Severity Prediction -->
+    <section class="glass-card">
+      <span class="tag tag-ai" style="margin-bottom: 0.4rem;">FEATURE #8 — FORECASTING</span>
+      <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+        📈 Disaster Severity Prediction Timeline
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; text-align: center;">
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1.25rem; border-radius: var(--radius-sm);">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">CURRENT STATUS (00:00)</div>
+          <div style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--accent-low); margin: 0.4rem 0;">HIGH</div>
+          <span style="font-size: 0.78rem; color: var(--text-dim);">Water Level: 205.4m</span>
+        </div>
+        <div style="background: rgba(255, 136, 0, 0.1); border: 1px solid rgba(255, 136, 0, 0.3); padding: 1.25rem; border-radius: var(--radius-sm);">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">PREDICTED +2 HOURS</div>
+          <div style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--accent-high); margin: 0.4rem 0;">VERY HIGH</div>
+          <span style="font-size: 0.78rem; color: var(--text-dim);">Rainfall: +45mm/hr</span>
+        </div>
+        <div style="background: rgba(255, 59, 92, 0.1); border: 1px solid rgba(255, 59, 92, 0.3); padding: 1.25rem; border-radius: var(--radius-sm);">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">PREDICTED +4 HOURS</div>
+          <div style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--accent-critical); margin: 0.4rem 0;">🔴 CRITICAL</div>
+          <span style="font-size: 0.78rem; color: var(--text-dim);">Bridge Breach Risk: 96%</span>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- SOS Action Plan Modal -->
+  <div id="modal-action-plan" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🚨 SOS → AI ACTION PLAN GENERATOR</div>
+        <button class="btn-close-modal" onclick="closeModal('modal-action-plan')">✕</button>
+      </div>
+      <div id="action-plan-content">
+        <!-- Injected via script.js -->
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

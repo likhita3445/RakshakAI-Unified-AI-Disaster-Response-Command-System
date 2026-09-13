@@ -1,0 +1,556 @@
+/* ==========================================================================
+   RAKSHAKAI — UNIFIED AI SIMULATION & DECISION-SUPPORT ENGINE
+   ========================================================================== */
+// --- Global State ---
+const RakshakState = {
+  activeDisasters: [
+    {
+      id: 'area-a',
+      name: 'Area A — Yamuna Riverbank Zone',
+      affected: 850,
+      vulnerable: { elderly: 42, children: 17, critical: 8, disabled: 12, pregnant: 5 },
+      severity: 'CRITICAL',
+      severityScore: 94,
+      medicalNeed: true,
+      routeStatus: 'BLOCKED_PRIMARY',
+      recommendedRoute: 'Route B (Highland Pass)',
+      resources: { ambulances: 2, rescueTeams: 1, waterLiters: 500, foodKits: 300, medKits: 1 }
+    },
+    {
+      id: 'area-b',
+      name: 'Area B — North District Sector 4',
+      affected: 420,
+      vulnerable: { elderly: 12, children: 5, critical: 2, disabled: 4, pregnant: 1 },
+      severity: 'HIGH',
+      severityScore: 72,
+      medicalNeed: false,
+      routeStatus: 'CLEAR',
+      recommendedRoute: 'Route A (Direct Highway)',
+      resources: { ambulances: 1, rescueTeams: 0, waterLiters: 200, foodKits: 400, medKits: 0 }
+    },
+    {
+      id: 'area-c',
+      name: 'Area C — East Colony Shelter',
+      affected: 180,
+      vulnerable: { elderly: 5, children: 2, critical: 0, disabled: 1, pregnant: 0 },
+      severity: 'MEDIUM',
+      severityScore: 38,
+      medicalNeed: false,
+      routeStatus: 'CLEAR',
+      recommendedRoute: 'Route A (Direct Highway)',
+      resources: { ambulances: 0, rescueTeams: 0, waterLiters: 100, foodKits: 200, medKits: 0 }
+    }
+  ],
+  simulation: {
+    floodLevel: 65,
+    populationMultiplier: 1.0,
+    availableAmbulances: 5,
+    mainRoadBlocked: true
+  },
+  offlineQueue: [],
+  isOffline: false,
+  judgeMode: {
+    active: false,
+    currentStep: 1,
+    timer: null,
+    totalSteps: 8
+  }
+};
+// --- Web Audio API Synthesizer for Tactical SFX ---
+const PlaySound = (type = 'click') => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (type === 'sos') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } else if (type === 'alert') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.setValueAtTime(900, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } else {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(400, ctx.currentTime);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    }
+  } catch (e) {
+    // Audio context not allowed or failed
+  }
+};
+// --- Priority Score Calculation Engine ---
+function calculatePriorityScore(area) {
+  let score = 0;
+  
+  // Population Weight (max 30 pts)
+  const popFactor = Math.min(30, Math.round((area.affected / 1000) * 30));
+  score += popFactor;
+  // Vulnerable People (max 25 pts)
+  const vulnTotal = (area.vulnerable.elderly * 0.3) + 
+                    (area.vulnerable.children * 0.2) + 
+                    (area.vulnerable.critical * 1.5) + 
+                    (area.vulnerable.disabled * 0.4);
+  const vulnFactor = Math.min(25, Math.round(vulnTotal * 1.2));
+  score += vulnFactor;
+  // Medical Need (15 pts)
+  if (area.medicalNeed || area.vulnerable.critical > 0) {
+    score += 15;
+  }
+  // Route Accessibility Penalty / Urgency (15 pts)
+  if (area.routeStatus.includes('BLOCKED')) {
+    score += 16;
+  } else {
+    score += 8;
+  }
+  // Flood Severity Factor (14 pts)
+  score += Math.round((RakshakState.simulation.floodLevel / 100) * 14);
+  return Math.min(99, Math.max(10, score));
+}
+// --- Toast Notification Helper ---
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container') || createToastContainer();
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span style="font-size: 1.2rem;">${type === 'critical' ? '🚨' : type === 'success' ? '✅' : 'ℹ️'}</span>
+    <div>${message}</div>
+  `;
+  container.appendChild(toast);
+  PlaySound(type === 'critical' ? 'sos' : 'click');
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+function createToastContainer() {
+  const container = document.createElement('div');
+  container.id = 'toast-container';
+  container.className = 'toast-container';
+  document.body.appendChild(container);
+  return container;
+}
+// --- NLP Emergency Parsing Engine ---
+function parseEmergencyReportNLP(text, lang = 'hi') {
+  let disaster = 'Flood / Waterlogging';
+  let count = 20;
+  let vulnerable = { elderly: 1, children: 2, critical: 1 };
+  let medical = true;
+  let severity = 'CRITICAL';
+  
+  const lower = text.toLowerCase();
+  
+  if (lower.includes('fire') || lower.includes('aag')) {
+    disaster = 'Fire Outbreak';
+  } else if (lower.includes('landslide') || lower.includes('chatan')) {
+    disaster = 'Landslide';
+  }
+  // Extract numbers
+  const numberMatches = text.match(/\d+/g);
+  if (numberMatches && numberMatches.length > 0) {
+    count = parseInt(numberMatches[0], 10);
+  }
+  if (lower.includes('elderly') || lower.includes('bujurg') || lower.includes('old')) {
+    vulnerable.elderly += 2;
+  }
+  if (lower.includes('child') || lower.includes('bacche') || lower.includes('school')) {
+    vulnerable.children += 5;
+  }
+  const priorityScore = Math.min(98, 75 + Math.round(count / 5));
+  return {
+    disaster,
+    affectedCount: count,
+    vulnerable,
+    medicalNeed: medical,
+    severity,
+    priorityScore,
+    extractedJSON: {
+      "DisasterType": disaster,
+      "EstimatedPeople": count,
+      "VulnerableGroups": vulnerable,
+      "MedicalEmergency": medical,
+      "ConfidenceScore": "94.8%"
+    }
+  };
+}
+// --- Dynamic Canvas Map Visualizer ---
+function initCommandMapCanvas() {
+  const canvas = document.getElementById('command-map');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  let step = 0;
+  function drawMap() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const w = canvas.width;
+    const h = canvas.height;
+    // Grid Background
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineWidth = x % 120 === 0 ? 1.5 : 0.5;
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let y = 0; y < h; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineWidth = y % 120 === 0 ? 1.5 : 0.5;
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+    // River / Flood Water Layer
+    const grad = ctx.createLinearGradient(0, h * 0.4, w, h * 0.7);
+    grad.addColorStop(0, 'rgba(14, 165, 233, 0.25)');
+    grad.addColorStop(0.5, 'rgba(56, 189, 248, 0.4)');
+    grad.addColorStop(1, 'rgba(14, 165, 233, 0.25)');
+    
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.4);
+    ctx.bezierCurveTo(w * 0.3, h * 0.3 + Math.sin(step * 0.05) * 10, w * 0.6, h * 0.6 + Math.cos(step * 0.05) * 10, w, h * 0.55);
+    ctx.lineTo(w, h * 0.75);
+    ctx.bezierCurveTo(w * 0.6, h * 0.8, w * 0.3, h * 0.5, 0, h * 0.6);
+    ctx.closePath();
+    ctx.fill();
+    // Map Nodes Coordinates
+    const areaA = { x: w * 0.75, y: h * 0.35, label: 'Area A (94 Critical)', color: '#ff3b5c' };
+    const areaB = { x: w * 0.45, y: h * 0.25, label: 'Area B (72 High)', color: '#ff8800' };
+    const areaC = { x: w * 0.2, y: h * 0.7, label: 'Area C (38 Medium)', color: '#eab308' };
+    const baseStation = { x: w * 0.15, y: h * 0.2, label: 'Command Base 🚑', color: '#10b981' };
+    // Routes
+    // Recommended Route B (Base -> Area B -> Area A)
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(baseStation.x, baseStation.y);
+    ctx.lineTo(areaB.x, areaB.y);
+    ctx.lineTo(areaA.x, areaA.y);
+    ctx.stroke();
+    // Blocked Main Highway (Direct Base -> Area A)
+    ctx.strokeStyle = '#ff3b5c';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(baseStation.x, baseStation.y);
+    ctx.lineTo(areaA.x, areaA.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Draw Blockage Icon X
+    const midX = (baseStation.x + areaA.x) / 2;
+    const midY = (baseStation.y + areaA.y) / 2;
+    ctx.fillStyle = '#ff3b5c';
+    ctx.font = 'bold 16px Inter';
+    ctx.fillText('❌ BRIDGE BLOCKED', midX - 45, midY - 10);
+    // Nodes Pulsing Circles
+    [areaA, areaB, areaC, baseStation].forEach(node => {
+      // Pulse ring
+      ctx.strokeStyle = node.color;
+      ctx.lineWidth = 2;
+      const radius = 12 + (Math.sin(step * 0.08) * 4);
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      // Solid inner
+      ctx.fillStyle = node.color;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+      // Text Tag
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Outfit';
+      ctx.shadowColor = '#000000';
+      ctx.shadowBlur = 4;
+      ctx.fillText(node.label, node.x + 15, node.y + 4);
+      ctx.shadowBlur = 0;
+    });
+    // Animated Moving Ambulance on Safe Route
+    const progress = (step % 200) / 200;
+    let ambX, ambY;
+    if (progress < 0.5) {
+      const p1 = progress * 2;
+      ambX = baseStation.x + (areaB.x - baseStation.x) * p1;
+      ambY = baseStation.y + (areaB.y - baseStation.y) * p1;
+    } else {
+      const p2 = (progress - 0.5) * 2;
+      ambX = areaB.x + (areaA.x - areaB.x) * p2;
+      ambY = areaB.y + (areaA.y - areaB.y) * p2;
+    }
+    ctx.font = '18px Inter';
+    ctx.fillText('🚑', ambX - 10, ambY + 6);
+    step++;
+    requestAnimationFrame(drawMap);
+  }
+  drawMap();
+}
+// --- Action Plan Modal Generator ("SOS -> AI Action Plan") ---
+function triggerSOSActionPlan() {
+  PlaySound('sos');
+  const modal = document.getElementById('modal-action-plan');
+  if (!modal) return;
+  const content = document.getElementById('action-plan-content');
+  if (content) {
+    content.innerHTML = `
+      <div style="background: rgba(255, 59, 92, 0.12); border: 1px solid rgba(255, 59, 92, 0.4); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="color: var(--accent-critical); font-family: var(--font-heading); font-size: 1.2rem;">🚨 EMERGENCY DECISION DETECTED</h3>
+          <span class="tag tag-critical">PRIORITY 96/100 — CRITICAL</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.4rem;">Target Zone: <strong>Area A (Yamuna Riverbank Sector 9)</strong></p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="action-item">
+          <strong>1. 📍 Location & Coordinates</strong>
+          <span>28.6139° N, 77.2090° E (Yamuna Sector 9)</span>
+        </div>
+        <div class="action-item">
+          <strong>2. 👥 Estimated Population</strong>
+          <span>850 Affected (42 Elderly, 17 Children, 8 Critical)</span>
+        </div>
+        <div class="action-item">
+          <strong>3. 🏥 Medical Requirement</strong>
+          <span style="color: var(--accent-critical); font-weight: 700;">IMMEDIATE (8 Trapped Patient Evacuations)</span>
+        </div>
+        <div class="action-item">
+          <strong>4. 🚑 Required Rescue Resources</strong>
+          <span>2 Ambulances, 1 NDRF Squad, 500L Water, 1 Medkit</span>
+        </div>
+        <div class="action-item">
+          <strong>5. 🛣️ Safest Dynamic Route</strong>
+          <span style="color: var(--accent-low); font-weight: 700;">Route B (Highland Bypass - Main Bridge Blocked)</span>
+        </div>
+        <div class="action-item">
+          <strong>6. 🎯 AI Priority Ranking</strong>
+          <span>Rank #1 (Highest Urgency Score 96)</span>
+        </div>
+      </div>
+      <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1rem; border-radius: var(--radius-sm);">
+        <h4 style="color: #a5b4fc; font-family: var(--font-heading); margin-bottom: 0.5rem;">🤖 Recommended Action Plan Pipeline:</h4>
+        <ol style="padding-left: 1.2rem; font-size: 0.88rem; color: var(--text-main); line-height: 1.7;">
+          <li>Dispatch <strong>2 Ambulances</strong> from Command Base via Route B immediately.</li>
+          <li>Alert <strong>NDRF Team 3</strong> for boat deployment across flooded riverbank.</li>
+          <li>Air-drop <strong>500L Water & Medical Kits</strong> to Sector 9 Community Center roof.</li>
+          <li>Redirect incoming traffic away from <strong>Highway Bridge 4 (Risk Level 89%)</strong>.</li>
+        </ol>
+      </div>
+      <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+        <button class="map-btn" onclick="closeModal('modal-action-plan')">Dismiss</button>
+        <button class="btn-judge-mode" onclick="executePlanDirectly()">🚀 EXECUTE RESCUE DISPATCH NOW</button>
+      </div>
+    `;
+  }
+  modal.classList.add('active');
+}
+function executePlanDirectly() {
+  closeModal('modal-action-plan');
+  showToast('🚨 Rescue Plan Executed! Units dispatched via Route B.', 'critical');
+}
+// --- "Explain My Decision" Modal ---
+function openExplainModal(areaId) {
+  PlaySound('click');
+  const modal = document.getElementById('modal-explain');
+  if (!modal) return;
+  const area = RakshakState.activeDisasters.find(a => a.id === areaId) || RakshakState.activeDisasters[0];
+  const content = document.getElementById('explain-content');
+  if (content) {
+    content.innerHTML = `
+      <div style="margin-bottom: 1.25rem;">
+        <h3 style="color: #fff; font-family: var(--font-heading); font-size: 1.2rem;">Why ${area.name} First?</h3>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">AI Score Composition Matrix (Total Score: <span class="score-critical">${area.severityScore}/100</span>)</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.04); border-radius: 6px;">
+          <span>👥 Affected Population Size (+850)</span>
+          <strong style="color: var(--accent-primary);">+28 Points</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.04); border-radius: 6px;">
+          <span>🏥 Critical Patients & Vulnerable Groups (42 Elderly, 8 Critical)</span>
+          <strong style="color: var(--accent-critical);">+25 Points</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.04); border-radius: 6px;">
+          <span>💧 Resource Scarcity (Water & Medkit Stock Critical)</span>
+          <strong style="color: var(--accent-high);">+18 Points</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.04); border-radius: 6px;">
+          <span>🛣️ Primary Route Blocked / Time Sensitivity</span>
+          <strong style="color: var(--accent-medium);">+16 Points</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.04); border-radius: 6px;">
+          <span>🌊 Rising Flood Severity Trend</span>
+          <strong style="color: var(--accent-low);">+7 Points</strong>
+        </div>
+      </div>
+      <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.8rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: #a7f3d0; margin-bottom: 1.5rem;">
+        🤖 <strong>AI Summary:</strong> Area A is prioritized because 850 people are affected, 8 patients are in critical medical condition, and the primary safe evacuation window is closing within 2 hours.
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+        <span style="font-size: 0.8rem; color: var(--text-dim);">AI Confidence Level: 94.2%</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn-why" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-low);" onclick="acceptAIDecision('${area.id}')">ACCEPT DECISION</button>
+          <button class="btn-why" style="background: rgba(255, 59, 92, 0.2); color: var(--accent-critical);" onclick="closeModal('modal-explain')">HUMAN OVERRIDE</button>
+        </div>
+      </div>
+    `;
+  }
+  modal.classList.add('active');
+}
+function acceptAIDecision(areaId) {
+  closeModal('modal-explain');
+  showToast(`✅ Decision Accepted for Area A! Priority Score locked.`, 'success');
+}
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) modal.classList.remove('active');
+}
+// --- Judge Demo Mode Orchestrator ---
+function startJudgeDemoMode() {
+  PlaySound('alert');
+  RakshakState.judgeMode.active = true;
+  RakshakState.judgeMode.currentStep = 1;
+  let banner = document.getElementById('judge-demo-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'judge-demo-banner';
+    banner.className = 'judge-banner';
+    document.body.prepend(banner);
+  }
+  updateJudgeBannerUI();
+  showToast('🎤 JUDGE DEMO MODE ACTIVATED — Auto-stepping through 8 presentation scenarios!', 'success');
+}
+function updateJudgeBannerUI() {
+  const banner = document.getElementById('judge-demo-banner');
+  if (!banner) return;
+  const steps = [
+    "Stage 1: Flash Flood Emergency Detected in Yamuna Sector",
+    "Stage 2: Multilingual Emergency Report (Hindi Voice parsed)",
+    "Stage 3: AI Smart Rescue Priority Calculated (Score 94/100)",
+    "Stage 4: Intelligent Resource Allocation Plan Generated",
+    "Stage 5: Main Highway Bridge Blockage Detected!",
+    "Stage 6: AI Dynamic Safe Route Rerouted via Route B",
+    "Stage 7: What-If Simulation: Population Spikes to 3,000",
+    "Stage 8: Final AI Commander Rescue Plan Executed!"
+  ];
+  const currentText = steps[RakshakState.judgeMode.currentStep - 1] || steps[0];
+  banner.innerHTML = `
+    <div class="judge-banner-info">
+      <span>🎤 JUDGE DEMO MODE</span>
+      <span class="judge-step-indicator">STEP ${RakshakState.judgeMode.currentStep} / ${RakshakState.judgeMode.totalSteps}</span>
+      <span style="font-size: 0.9rem; font-weight: 500;">${currentText}</span>
+    </div>
+    <div class="judge-controls">
+      <button class="btn-judge-ctrl" onclick="nextJudgeStep()">Next Step ➡️</button>
+      <button class="btn-judge-ctrl" style="background: rgba(255,59,92,0.4);" onclick="stopJudgeDemo()">Exit Demo</button>
+    </div>
+  `;
+}
+function nextJudgeStep() {
+  PlaySound('click');
+  if (RakshakState.judgeMode.currentStep < RakshakState.judgeMode.totalSteps) {
+    RakshakState.judgeMode.currentStep++;
+    updateJudgeBannerUI();
+    // Trigger stage specific actions
+    if (RakshakState.judgeMode.currentStep === 2) {
+      const input = document.getElementById('nlp-report-input');
+      if (input) {
+        input.value = "Hamare yaha paani bahut badh gaya hai, building mein 20 log fase hue hain aur ek elderly person ko medicine chahiye.";
+        processNLPReport();
+      }
+    } else if (RakshakState.judgeMode.currentStep === 4) {
+      triggerSOSActionPlan();
+    } else if (RakshakState.judgeMode.currentStep === 7) {
+      const popSlider = document.getElementById('sim-pop-slider');
+      if (popSlider) {
+        popSlider.value = 3000;
+        updateWhatIfSimulation();
+      }
+    }
+  } else {
+    showToast('🏆 DEMO COMPLETE! RakshakAI successfully handled complete disaster lifecycle.', 'success');
+    stopJudgeDemo();
+  }
+}
+function stopJudgeDemo() {
+  RakshakState.judgeMode.active = false;
+  const banner = document.getElementById('judge-demo-banner');
+  if (banner) banner.remove();
+  showToast('Demo Mode Deactivated', 'info');
+}
+// --- What-If Disaster Simulator Handler ---
+function updateWhatIfSimulation() {
+  const popVal = parseInt(document.getElementById('sim-pop-slider')?.value || 1000, 10);
+  const floodVal = parseInt(document.getElementById('sim-flood-slider')?.value || 65, 10);
+  const ambVal = parseInt(document.getElementById('sim-amb-slider')?.value || 5, 10);
+  RakshakState.simulation.populationMultiplier = popVal / 850;
+  RakshakState.simulation.floodLevel = floodVal;
+  RakshakState.simulation.availableAmbulances = ambVal;
+  // Recalculate Area A Score
+  const areaA = RakshakState.activeDisasters[0];
+  areaA.affected = popVal;
+  areaA.severityScore = calculatePriorityScore(areaA);
+  // Update UI Elements
+  const popDisplay = document.getElementById('sim-pop-val');
+  if (popDisplay) popDisplay.innerText = popVal.toLocaleString();
+  const floodDisplay = document.getElementById('sim-flood-val');
+  if (floodDisplay) floodDisplay.innerText = `${floodVal}%`;
+  const ambDisplay = document.getElementById('sim-amb-val');
+  if (ambDisplay) ambDisplay.innerText = ambVal;
+  const scoreBadge = document.getElementById('area-a-score-display');
+  if (scoreBadge) scoreBadge.innerText = `${areaA.severityScore}/100`;
+  // Bottleneck check warning
+  const alertBox = document.getElementById('sim-alert-box');
+  if (alertBox) {
+    if (ambVal < 8 && popVal > 2000) {
+      alertBox.style.display = 'block';
+      alertBox.innerHTML = `⚠️ <strong>RESOURCE BOTTLENECK:</strong> ${ambVal} Ambulances are insufficient for ${popVal} affected population. <em>Recommended minimum: 8 Units.</em>`;
+    } else {
+      alertBox.style.display = 'none';
+    }
+  }
+  PlaySound('click');
+}
+// --- NLP Report Input Processing ---
+function processNLPReport() {
+  const input = document.getElementById('nlp-report-input');
+  if (!input || !input.value.trim()) return;
+  const result = parseEmergencyReportNLP(input.value);
+  const outputBox = document.getElementById('nlp-output-json');
+  if (outputBox) {
+    outputBox.innerHTML = `<pre>${JSON.stringify(result.extractedJSON, null, 2)}</pre>`;
+  }
+  const scoreTag = document.getElementById('nlp-priority-tag');
+  if (scoreTag) {
+    scoreTag.innerText = `Priority Score: ${result.priorityScore}/100 — HIGH URGENCY`;
+  }
+  showToast(`📱 Emergency Parsed! Disaster: ${result.disaster} | Priority: ${result.priorityScore}/100`, 'success');
+}
+// --- DOM Initializations ---
+document.addEventListener('DOMContentLoaded', () => {
+  initCommandMapCanvas();
+  // Modal close background listeners
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  });
+});
