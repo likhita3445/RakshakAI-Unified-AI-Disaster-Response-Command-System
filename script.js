@@ -2237,7 +2237,22 @@ function generateSyntheticSatelliteDataUri(type) {
 function handleSatelliteImgError(img, type) {
   if (!img) return;
   
-  // Step 1: Try high-resolution online satellite disaster CDN
+  // Step 1: Check if the images were uploaded to the root directory (without assets/ folder)
+  if (!img.dataset.triedRoot) {
+    img.dataset.triedRoot = 'true';
+    if (type === 'before') {
+      img.src = 'satellite_before.jpg';
+      return;
+    } else if (type === 'after') {
+      img.src = 'satellite_after.jpg';
+      return;
+    } else if (type === 'drone') {
+      img.src = 'drone_damage.jpg';
+      return;
+    }
+  }
+
+  // Step 2: Try high-resolution online satellite disaster CDN
   if (!img.dataset.triedCdn) {
     img.dataset.triedCdn = 'true';
     if (type === 'before') {
